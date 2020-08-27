@@ -357,9 +357,21 @@
 /* #############################   Buttons  ############################################*/
 
 .btn-search {
-  top: 15px;
+  top: 12px;
   position: absolute;
   right: 25px;
+  background-color: transparent; 
+  border: 2px solid white; 
+  border-radius: 5px; 
+  color: white; 
+  padding-top: 10px; 
+  padding-bottom: 10px; 
+  padding-left: 15px; 
+  padding-right: 15px;
+}
+
+.btn-search:after {
+
 }
 
 .btn-fullscreen {
@@ -394,7 +406,7 @@ display: none !important;
 
 .btn-action {
   position: absolute;
-  right: 25px;
+  right: 35px;
 }
 
 
@@ -572,7 +584,7 @@ vertical-align: middle;
 }
 .sidebarcard {
   overflow-y: auto;
-  max-height: 420px;
+  height: 100%;
 }
 
 .svg-class{

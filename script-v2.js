@@ -141,6 +141,8 @@ function drawOrganizationChart(params) {
         .append("svg") 
         .attr("width", attrs.width)
         .attr("height", attrs.height)
+        .attr("margin-left", (window.innerWidth - attrs.width))
+        .attr("top", 0)
         .call(zoomBehaviours)
         .append("g")
         .attr("transform", "translate(" + attrs.width / 2 + "," + 20 + ")");
@@ -904,7 +906,7 @@ function drawOrganizationChart(params) {
               .append("g")
               .attr("class", "page")
               .attr("transform", function(d) {
-                var x = (d.type == "next") ? currPar.x+ 280 : currPar.x+ 30;
+                var x = (d.type == "next") ? currPar.x + 260 : currPar.x + 10;
                 var y = (d.type == "prev") ? currPar.y+ 80 + 20 : currPar.y+ 80 + 20;
                 // if (d.type = "next")
                 // {
@@ -952,7 +954,7 @@ function drawOrganizationChart(params) {
             })
             pageTextControl.append("text")
             .text(function (d) {
-            return "Page "+d.currPage +" out of "+d.TotalPage
+            return "Page "+d.currPage +" / "+d.TotalPage
         })
           });
           
@@ -1134,14 +1136,25 @@ function drawOrganizationChart(params) {
         }
         function sideBarHandler(d) {
             var content = sideBarContent(d)
-            sidebar.html(content);
-            d3.select('.sidebar-wrapper').style('display', 'block').style('opacity', 1)
-            $('#sideBar').show()
+            //sidebar.html(content);
+            //d3.select('.sidebar-wrapper').style('display', 'block').style('opacity', 1)
+            //$('#sideBar').show()
+
+            d3.select('#detailsSideBar').html(content)
+
             console.log("sidebar")
-
-
-
         }
+
+
+		document.onkeydown = function(evt) {
+		    evt = evt || window.event;
+		    if (evt.keyCode == 27) {
+		    	d3.select('.sidebar-wrapper').style('display', 'none').style('opacity', 0)
+		         $('#sideBar').hide()
+		    }
+		};
+
+
         function sideBarOutHandler(d) {
             sidebar.transition()
                 .duration(200)
