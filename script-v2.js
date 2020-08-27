@@ -32,7 +32,7 @@ function drawOrganizationChart(params) {
     var RelationSubtypeColors = {
         "Filled": "grey",
         "Owned": "blue",
-        "Affiliated Purchasing": "teal",
+        "Affiliated Purchasing": "magenta",
         "Managed": "red",
         "Leased": "orange",
         "OWNERSHIP": "purple",
@@ -1313,7 +1313,7 @@ function drawOrganizationChart(params) {
     function reflectResults(results) {
         var htmlStringArray = results.map(function (result) {
             var strVar = "";
-            strVar += "         <div class=\"list-item\">";
+            strVar += "         <div class=\"list-item\" >";
             strVar += "          <a >";
             strVar += "            <div class=\"image-wrapper\">";
             strVar += "              <img class=\"image\" src=\"" + CheckOrgTypeReturnImage(result) + "\"\/>";

@@ -24,35 +24,7 @@
 </head>
 
 <body translate="no">
-    <div class="top-bar">
-        <div class="ui center aligned inverted segment orange-bar">
-            <h3>Customer Network Visualization</h3>
-        </div>
-    </div>
-    <a id="downloadAnchorElem" style="display:none"></a>
-    <!-- <button class="btn-action btn-fullscreen" onclick="params.funcs.toggleFullScreen()">Fullscreen </button> -->
-    <button class="ui   acrive orange basic button btn-fullscreen btn-action" onclick="params.funcs.toggleFullScreen()">
-        <i class="expand arrows alternate icon"></i>
-        FullScreen
-    </button>
-    <button class="btn-action btn-show-my-self" onclick="params.funcs.showMySelf()"> Show myself <span class='icon' />
-        <i class="fa fa-user" aria-hidden="true"></i></span></button>
-    <button class="ui   acrive orange basic button btn-action btn-search" onclick="params.funcs.search()">
-        <i class="search icon"></i>
-        Search
-    </button>
-
-    <button class="ui  orange basic button btn-action btn-commit" onclick="params.funcs.download()">
-        <i class="save icon"></i>
-        Commit
-    </button>
-    <button class="ui   acrive orange basic button btn-action btn-download" onclick="params.funcs.download()">
-        <i class="cloud download icon"></i>
-        Download
-    </button>
-
-    <button class=" btn-action btn-back" onclick="params.funcs.back()"> Back <span class='icon' /> <i
-            class="fa fa-arrow-left" aria-hidden="true"></i></span></button>
+   
     <!-- <div class="dropdown-box">
         <div class="ui fluid search selection dropdown">
             <input type="hidden" name="country">
@@ -63,7 +35,10 @@
         </div>
     </div> -->
     <div class="top-bar">
-        <div class="ui segment three column grid" id= "filter-bar">
+        <div class="ui segment three column grid ui aligned inverted segment orange-bar" id= "filter-bar">
+        	        <div style="margin-top: 8px;">
+            <h3>Customer Network Visualization</h3>
+        </div>
             <!-- <div class="dropdown-box">
                 <div class="ui fluid search selection dropdown entity_name">
                     <input type="hidden" name="country">
@@ -118,9 +93,9 @@
             dept description test, this is department description
         </div>
     </div>
-    <div class="user-search-box">
+    <div class="user-search-box" style="z-index: 100">
         <div class="input-box">
-            <div class="close-button-wrapper"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times"
+            <div class="close-button-wrapper" style="float: right;"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times"
                     aria-hidden="true"></i></div>
             <div class="input-wrapper">
                 <input type="text" class="search-input" placeholder="Search by account name" />
@@ -181,72 +156,106 @@
             </div>
         </div>
     </div>
-    <div class=" legends">
+
+	
+	<div class="legend1">
         <div class="ui middle aligned  list">
             <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline grey icon"></i>
-                </div>
+				<div class="input-color">
+    				<div class="color-box" style="background-color: grey;"></div>
+				</div>
                 <div class="content">
                     Filled
                 </div>
             </div>
-            <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline blue icon"></i>
-                </div>
+        </div>
+    </div>
+
+    <div class=" legend2">
+        <div class="ui middle aligned  list">
+			<div class="item">
+				<div class="input-color">
+    				<div class="color-box" style="background-color: blue;"></div>
+				</div>
+
                 <div class="content">
                     Owned
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class=" legend3">
+        <div class="ui middle aligned  list">
             <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline teal icon"></i>
-                </div>
+				<div class="input-color">
+    				<div class="color-box" style="background-color: magenta;"></div>
+				</div>
                 <div class="content">
                     Affiliated
                 </div>
             </div>
-            <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline red icon"></i>
-                </div>
+        </div>
+    </div>
+
+    <div class=" legend4">
+        <div class="ui middle aligned  list">
+			<div class="item">
+				<div class="input-color">
+    				<div class="color-box" style="background-color: red;"></div>
+				</div>
                 <div class="content">
                     Managed
                 </div>
             </div>
         </div>
     </div>
-    <div class=" legends2">
+
+    <div class=" legend5">
         <div class="ui middle aligned  list">
             <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline orange icon"></i>
-                </div>
+				<div class="input-color">
+    				<div class="color-box" style="background-color: orange;"></div>
+				</div>
                 <div class="content">
                     Leased
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class=" legend6">
+        <div class="ui middle aligned  list">
             <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline purple icon"></i>
-                </div>
+				<div class="input-color">
+    				<div class="color-box" style="background-color: purple;"></div>
+				</div>
                 <div class="content">
                     Ownership
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class=" legend7">
+        <div class="ui middle aligned  list">
             <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline green icon"></i>
-                </div>
+				<div class="input-color">
+    				<div class="color-box" style="background-color: green;"></div>
+				</div>
                 <div class="content">
                     Department
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="legend8">
+        <div class="ui middle aligned  list">
             <div class="item">
-                <div class="right floated content">
-                    <i class="window minimize outline black icon"></i>
-                </div>
+				<div class="input-color">
+    				<div class="color-box" style="background-color: black;"></div>
+				</div>
                 <div class="content">
                     Outlet
                 </div>
@@ -255,7 +264,7 @@
     </div>
     </div>
     
-    <div id="svgChart">
+    <div style="margin-top: 45px;" id="svgChart">
 
     </div>
     <script type="text/javascript" src="script-v2.js"></script>
