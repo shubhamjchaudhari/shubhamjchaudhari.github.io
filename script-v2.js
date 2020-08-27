@@ -30,13 +30,13 @@ function drawOrganizationChart(params) {
     var node_to_rename = null;
     var circularRemovedNode;
     var RelationSubtypeColors = {
-        "Filled": "grey",
+        "Filled": "slategrey",
         "Owned": "blue",
         "Affiliated Purchasing": "magenta",
         "Managed": "red",
         "Leased": "orange",
         "OWNERSHIP": "purple",
-        "DEPARTMENT": "green",
+        "DEPARTMENT": "forestgreen",
         "OUTLET": "black"
     };
 
