@@ -595,62 +595,63 @@ vertical-align: middle;
   left: 25px;
   top: 75px;
   height: 25px;
-  width: 70px;
+  width: 60px;
 }
 .legend2{
   position: absolute;
   left: 175px;
   top: 75px;
   height: 25px;
-  width: 80px;
+  width: 65px;
 }
 .legend3{
   position: absolute;
   left: 350px;
   top: 75px;
   height: 25px;
-  width: 95px;
+  width: 80px;
 }
 .legend4{
   position: absolute;
   left: 525px;
   top: 75px;
   height: 25px;
-  width: 95px;
+  width: 80px;
 }
 .legend5{
   position: absolute;
   left: 700px;
   top: 75px;
   height: 25px;
-  width: 80px;
+  width: 65px;
 }
 .legend6{
   position: absolute;
   left: 875px;
   top: 75px;
   height: 25px;
-  width: 105px;
+  width: 90px;
 }
 .legend7{
   position: absolute;
   left: 1050px;
   top: 75px;
   height: 25px;
-  width: 110px;
+  width: 95px;
 }
 .legend8{
   position: absolute;
   left: 1225px;
   top: 75px;
   height: 25px;
-  width: 75px;
+  width: 60px;
 }
 .orange-bar{
   color: white;
   background-image: url('white label header.svg') !important;
   background-repeat:no-repeat;
   background-size:cover;
+  border-radius: 0px;
   /* background-color:  #f7911f !important; */
 }
 .ui.card>.content>.header, .card 
@@ -659,11 +660,11 @@ vertical-align: middle;
 }
 
 .color-box {
-    width: 10px;
-    height: 10px;
+    width: 15px;
+    height: 5px;
     display: inline-block;
     left: 5px;
     top: 5px;
     float: right;
-    margin-top: 3px;
+    margin-top: 6px;
 }

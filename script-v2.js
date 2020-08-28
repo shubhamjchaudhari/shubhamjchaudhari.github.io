@@ -24,6 +24,8 @@ function drawOrganizationChart(params) {
     var OrgTypesLevel5 = ['OUTLET'];
     var PAGINATION = 3;
 
+    var selectedNodeId = "";
+    var selectedNodeBgColor = "";
     var create_node_modal_active = false;
     var rename_node_modal_active = false;
     var create_node_parent = null;
@@ -286,7 +288,7 @@ function drawOrganizationChart(params) {
     }
 
     outer_update = null
-    function update(source, param) {
+    function update(source, param, locate=false) {
 
         var menu = [
             {
@@ -569,18 +571,20 @@ function drawOrganizationChart(params) {
 
         var nodeGroup = nodeEnter.append("g")
             .attr("class", "node-group")
-
+            
 
 
         nodeGroup.append("rect")
             .attr("width", attrs.nodeWidth)
             .attr("height", attrs.nodeHeight)
+            .attr("id", function(d) {
+            	return ('N' + d.uniqueIdentifier);
+            })
             .attr("data-node-group-id", function (d) {
                 return d.uniqueIdentifier;
             })
             .attr('rx', '.5rem')
             .attr("fill", function (d) {
-                
                 var cl = ""
                 if (d.ENTITY_NAME.startsWith("(Filled)")) {
                     cl = "#c5c5c5"
@@ -657,6 +661,9 @@ function drawOrganizationChart(params) {
         collapsiblesWrapper.on("click", click);
         // console.log("collaps wrapper", collapsiblesWrapper);
         nodeGroup.append("text")
+        	.attr('id', function(d) {
+            	return ('N' + d.uniqueIdentifier +"name");
+            })
             .attr("x", dynamic.nodeTextLeftMargin)
             .attr("y", attrs.nodePadding + 10)
             .attr('class', 'entity-name')
@@ -748,17 +755,19 @@ function drawOrganizationChart(params) {
             .attr('rx', 3)
             .attr("stroke", function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
-                    print("param is here",param)
-                    return '#a1ceed'
+                    // print("param is here",param)
                 }
-                return attrs.nodeStroke;
+                else {
+                	return attrs.nodeStroke;
+            	}
             })
             .attr('stroke-width', function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
-                    return 6;
+                    return "1px";
                 }
                 return attrs.nodeStrokeWidth
             })
+
         // d3.select()
         // Transition exiting nodes to the parent's new position.
         // #exit
@@ -907,7 +916,7 @@ function drawOrganizationChart(params) {
               .attr("class", "page")
               .attr("transform", function(d) {
                 var x = (d.type == "next") ? currPar.x + 260 : currPar.x + 10;
-                var y = (d.type == "prev") ? currPar.y+ 80 + 20 : currPar.y+ 80 + 20;
+                var y = (d.type == "prev") ? currPar.y+ 80 + 17 : currPar.y+ 80 + 17;
                 // if (d.type = "next")
                 // {
                 //     var y = currPar.y+ 80 + 20;
@@ -924,23 +933,23 @@ function drawOrganizationChart(params) {
           
             pageControl
               .append("circle")
-              .attr("r", 12)
+              .attr("r", 13)
             //   .attr("width",)
             //   .attr("height",)
-              .style("fill", "#e3e3e2");
+              .style("fill", "#eeeeee");
             pageControl
               .append("image")
               .attr("xlink:href", function(d) {
                 if (d.type == "next") {
-                  return "next_1.svg"
+                  return "next_2.svg"
                 } else {
-                  return "prev_1.svg"
+                  return "prev_2.svg"
                 }
               })
-              .attr("x", -5)
-              .attr("y", -5)
-              .attr("width", 10)
-              .attr("height", 10);
+              .attr("x", -7)
+              .attr("y", -7)
+              .attr("width", 15)
+              .attr("height", 15);
               // ######################
             var pageTextControl = svg.selectAll(".page-text")
             .data(pageTextData)
@@ -1050,9 +1059,9 @@ function drawOrganizationChart(params) {
             strVar += '<div class="ui card sidebarcard">'
             strVar += '<div class="content">'
             strVar += '<img class="left floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
-            strVar += '<div class="header">' + toTitleCase(item.ENTITY_NAME) + '</div>'
+            strVar += '<div class="header" style="font-size: 18px;">' + toTitleCase(item.ENTITY_NAME) + '</div>'
             strVar += '<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
-            strVar += '<div><address> <a target="_blank" href="' + 'https://maps.google.com/?q=' + addvar + '">' + addvar + ' </a> </address></div>'
+            strVar += '<div><address> <a style="font-size: 12px;" target="_blank" href="' + 'https://maps.google.com/?q=' + addvar + '">' + addvar + ' </a> </address></div>'
             strVar += '<div class="ui divider"></div><div class="description">'
             strVar += '<div>Net Patient Revenue </span> <span class= "right-float"><b>$ 3.5B</b></span> </div><br>'
             strVar += '<div>Net Income: </span> <span class= "right-float"><b>$ 2.3B</b></span> </div><br>'
@@ -1136,11 +1145,22 @@ function drawOrganizationChart(params) {
         }
         function sideBarHandler(d) {
             var content = sideBarContent(d)
+            if (selectedNodeId != "") {
+	            d3.select(selectedNodeId).attr("stroke", "#cecece")
+	            d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
+            }
+
             //sidebar.html(content);
             //d3.select('.sidebar-wrapper').style('display', 'block').style('opacity', 1)
-            //$('#sideBar').show()
+	            //$('#sideBar').show()
+
+	        selectedNodeId = ("#N" + d.uniqueIdentifier)
+	        selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
 
             d3.select('#detailsSideBar').html(content)
+            console.log(d.uniqueIdentifier)
+            d3.select(selectedNodeId).attr("stroke", "#f00")
+            d3.select(selectedNodeId).attr("fill", "#fee")
 
             console.log("sidebar")
         }
@@ -1326,7 +1346,7 @@ function drawOrganizationChart(params) {
     function reflectResults(results) {
         var htmlStringArray = results.map(function (result) {
             var strVar = "";
-            strVar += "         <div class=\"list-item\" >";
+            strVar += "         <div class=\"list-item\" style=\"cursor: pointer;\" onclick='params.funcs.locate(" + result.uniqueIdentifier + ")'>";
             strVar += "          <a >";
             strVar += "            <div class=\"image-wrapper\">";
             strVar += "              <img class=\"image\" src=\"" + CheckOrgTypeReturnImage(result) + "\"\/>";
@@ -1340,7 +1360,7 @@ function drawOrganizationChart(params) {
             }
             strVar += "            <\/div>";
             strVar += "            <div class=\"buttons\">";
-           // strVar += "              <button class='btn-search-box btn-action btn-locate' onclick='params.funcs.locate(" + result.uniqueIdentifier + ")'>Locate <\/button>";
+           //strVar += "              <button class='btn-search-box btn-action btn-locate' onclick='params.funcs.locate(" + result.uniqueIdentifier + ")'>Locate <\/button>";
             strVar += "            <\/div>";
             strVar += "          <\/a>";
             strVar += "        <\/div>";
@@ -1597,9 +1617,51 @@ function drawOrganizationChart(params) {
         }
         
         expandSelectedNodes(attrs.root,final_path)
+
         update(attrs.root, {
             locate: id
         });
+
+
+		if (selectedNodeId != "") {
+            d3.select(selectedNodeId).attr("stroke", "#cecece")
+            d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
+        }
+
+        //sidebar.html(content);
+        //d3.select('.sidebar-wrapper').style('display', 'block').style('opacity', 1)
+            //$('#sideBar').show()
+
+        selectedNodeId = ("#N" + id)
+        selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
+
+        console.log(id)
+        d3.select(selectedNodeId).attr("stroke", "#f00")
+        d3.select(selectedNodeId).attr("stroke-width", "1px")
+        d3.select(selectedNodeId).attr("fill", "#fdd")
+
+        //document.getElementById(selectedNodeId.replace('#', '')).click()
+
+        var elem = document.getElementById(selectedNodeId.replace('#', ''))
+
+        var evt = document.createEvent("MouseEvents");
+    evt.initMouseEvent(
+        "click", /* type */
+        true, /* canBubble */
+        true, /* cancelable */
+        window, /* view */
+        0, /* detail */
+        0,  /* screenX */
+        0, /* screenY */
+        0, /* clientX */
+        0, /* clientY */
+        false, /* ctrlKey */
+        false, /* altKey */
+        false, /* shiftKey */
+        false, /* metaKey */
+        0, /* button */
+        null); /* relatedTarget */
+    elem.dispatchEvent(evt);
     }
 
 
@@ -1758,4 +1820,6 @@ function drawOrganizationChart(params) {
         // expandSelectedNodes(next_nod,path)
         
     }
+
+    
 }

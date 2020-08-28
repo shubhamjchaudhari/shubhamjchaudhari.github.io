@@ -35,7 +35,7 @@
         </div>
     </div> -->
     <div class="top-bar" id="navbar">
-    	<div class="ui segment three column grid ui aligned inverted segment orange-bar" id= "filter-bar">
+    	<div class="ui segment three column grid ui aligned inverted segment orange-bar" style="border-radius: 0em;" id= "filter-bar">
     		<div style="margin-top: 8px;">
     			<h3>Customer Network Visualization</h3>
     		</div>
@@ -52,8 +52,8 @@
             	<div class="ui fluid search selection dropdown entity_name">
             		<input type="hidden" name="country">
             		<i class="dropdown icon"></i>
-            		<div class="default text">Select IDN</div>
-            		<div class="menu">
+            		<div class="default text" id="selectedEntity">Select IDN</div>
+            		<div class="menu" id="entityNameMenu">
             		</div>
             	</div>
             </div>
@@ -97,6 +97,7 @@
     	<div class="input-box">
     		<div class="close-button-wrapper" style="float: right;"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times"
     			aria-hidden="true"></i></div>
+
     			<div class="input-wrapper">
     				<input type="text" class="search-input" style="white-space: nowrap;" placeholder="Search by account name" />
     				<!--<div class="input-bottom-placeholder">By Account Name</div>-->
@@ -276,8 +277,8 @@
     	var params = {
     		selector: "#svgChart",
     		dataLoadUrl: "https://gist.githubusercontent.com/venky18/3854ea4a96a4b249fc604443c81952a8/raw/f1a78e315491a6bac2065ec3b7382808b0d0ef26/random.json",
-    		chartWidth: (window.innerWidth - 40) * 0.85,
-    		chartHeight: window.innerHeight - 120,
+    		chartWidth: (window.innerWidth - 40) * 0.83,
+    		chartHeight: window.innerHeight - 110,
     		funcs: {
     			showMySelf: null,
     			search: null,
@@ -297,7 +298,7 @@
 
     	var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 5)
     	d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
-    	d3.select('.details-side-bar').style('height', (params.chartHeight + 5) + "px")
+    	d3.select('.details-side-bar').style('height', (params.chartHeight + 45) + "px")
 
     	var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
 
@@ -315,11 +316,21 @@
     	d3.select('.legend7').style('top', (window.innerHeight - 30) + "px")
     	d3.select('.legend8').style('top', (window.innerHeight - 30) + "px")
 
+    	d3.select('.legend1').style('left', (detailsSideBarWidth + 25) + "px")
+    	d3.select('.legend2').style('left', (detailsSideBarWidth + 150) + "px")
+    	d3.select('.legend3').style('left', (detailsSideBarWidth + 275) + "px")
+    	d3.select('.legend4').style('left', (detailsSideBarWidth + 400) + "px")
+    	d3.select('.legend5').style('left', (detailsSideBarWidth + 525) + "px")
+    	d3.select('.legend6').style('left', (detailsSideBarWidth + 650) + "px")
+    	d3.select('.legend7').style('left', (detailsSideBarWidth + 775) + "px")
+    	d3.select('.legend8').style('left', (detailsSideBarWidth + 900) + "px")
+
     	function toTitleCase(str) {
     		return str.replace(/(?:^|\s)\w/g, function(match) {
     			return match.toUpperCase();
     		});
     	}
+
     	var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
 
     	d3.json("HES_V1_V5_HIERARCHY.json", function (error, data) {
@@ -330,7 +341,7 @@
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
     				console.log('value is ' + value)
-    				treeWrapper(value,'All');
+    					treeWrapper(value,'All');
     			}
     		});
     		$('.ui.fluid.search.selection.dropdown.entity_type').dropdown({
@@ -378,6 +389,19 @@
 
                 }
             }
+
+            var entityCount = d3.select("#entityNameMenu").selectAll('div')[0].length;
+            var children = d3.select("#entityNameMenu").selectAll('div')[0];
+
+            for (var i=0; i<entityCount; i+=1) {
+            	if (children[i].textContent.toLowerCase().includes('Providence Saint Joseph Health'.toLowerCase())) {
+            		treeWrapper(i,'All');
+            		d3.select('#selectedEntity').text(children[i].textContent);
+            			break;
+            	}
+            }
+
+            //treeWrapper(0,'All');
         })
     </script>
 </body>
