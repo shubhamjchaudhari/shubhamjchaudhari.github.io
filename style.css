@@ -1,3 +1,18 @@
+.autofit-button {
+	background-color: #dfdfdf; /* Blue background */
+	border: none; /* Remove borders */
+	color: #909090; /* White text */
+	padding: 12px 16px; /* Some padding */
+	font-size: 16px; /* Set a font size */
+	cursor: pointer; /* Mouse pointer on hover */
+  }
+  
+  /* Darker background on mouse-over */
+  .autofit-button:hover {
+	background-color: #b0b0b0;
+	color: #404040;
+  }
+
 .full-container {
   background-color: red;
   width: 100%;
@@ -263,8 +278,6 @@
   text-align: left;
 }
 
-.
-
 .bottom-tooltip-hr {
   width: 100%;
   background-color: #58993e;
@@ -342,7 +355,7 @@
   font-size: 11px;
   background: #E1ECF4;
   border-radius: 2px;
-  color: ##39739d;
+  color: #39739d;
   display: inline-block;
   height: 20px;
   line-height: 20px;
@@ -517,10 +530,10 @@ text {
     margin-bottom: -10px;
     margin-left: 10px;
     margin-right: 10px; */
-    border-top: 2px solid #dcdcdc;
-    border-bottom: 2px solid #dcdcdc;
-    border-left: 2px solid #dcdcdc;
-    border-right: 2px solid #dcdcdc;
+    border-top: 2px solid teal;
+    border-bottom: 2px solid teal;
+    border-left: 2px solid teal;
+    border-right: 2px solid teal;
     /*overflow-x: scroll !important;*/
     /*overflow-y: hidden;*/
     background: #fff;

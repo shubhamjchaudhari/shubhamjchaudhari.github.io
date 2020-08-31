@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -66,7 +67,7 @@
             		</div>
             	</div>
             </div>
-            <div class="dropdown-box4">
+            <div class="dropdown-box4" hidden>
             	<div class="ui fluid search selection dropdown">
             		<input type="hidden" name="country">
             		<i class="dropdown icon"></i>
@@ -97,6 +98,15 @@
     	<div class="input-box">
     		<div class="close-button-wrapper" style="float: right;"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times"
     			aria-hidden="true"></i></div>
+<!--
+<div class="ui right labeled input" style="width:250px; height:100%;">
+  <input type="text" placeholder="Account Name">
+  <div class="ui dropdown label">
+    <i class="dropdown icon"></i>
+    <div class="entity-search-menu" id="searchEntityType">
+    </div>
+  </div>
+</div> -->
 
     			<div class="input-wrapper">
     				<input type="text" class="search-input" style="white-space: nowrap;" placeholder="Search by account name" />
@@ -266,12 +276,13 @@
     </div>
 
 
-    <div class="details-side-bar" id="detailsSideBar">
+    <div class="details-side-bar" id="detailsSideBar" style="border: 2px solid teal">
     </div>
-
     <div id="svgChart" style="float: right;">
 
     </div>
+
+	<button  id="fitToScreenButton" type="button" style="position: absolute;" onclick="params.funcs.fitToScreen()" class="autofit-button"><i class="fa fa-arrows"></i> Autofit</button>
     <script type="text/javascript" src="script-v2.js"></script>
     <script>
     	var params = {
@@ -295,14 +306,17 @@
     		data: null
     	}
 
+		d3.select('#fitToScreenButton').style('top', "75px")
+		d3.select('#fitToScreenButton').style('left', (window.innerWidth - 115) + "px")
 
-    	var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 5)
+
+    	var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3)
     	d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
-    	d3.select('.details-side-bar').style('height', (params.chartHeight + 45) + "px")
+    	d3.select('.details-side-bar').style('height', (params.chartHeight + 50) + "px")
 
     	var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
 
-    	d3.select('.details-side-bar').style('top', (navbarHeight + 2) + "px")
+    	d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
     	d3.select('.details-side-bar').style('position', "fixed")
     	//d3.select('#svgChart').style('margin-left', detailsSideBarWidth + "px")
     	d3.select('#svgChart').style('top', "0px")
@@ -324,6 +338,9 @@
     	d3.select('.legend6').style('left', (detailsSideBarWidth + 650) + "px")
     	d3.select('.legend7').style('left', (detailsSideBarWidth + 775) + "px")
     	d3.select('.legend8').style('left', (detailsSideBarWidth + 900) + "px")
+
+		
+		//d3.select('#fitToScreenButton').style('left', (detailsSideBarWidth + 25) + "px")
 
     	function toTitleCase(str) {
     		return str.replace(/(?:^|\s)\w/g, function(match) {
@@ -368,7 +385,13 @@
                 $('.dropdown.entity_type .menu')
                 .append('<div class="item" data-value=' + i + '> ' + OrgTypes[i] + '</div>');
             }
-
+/*
+			for (var i = 0; i < OrgTypes.length; i++) {
+                // console.log(data[i])
+                $('#searchEntityType')
+                .append('<div class="item" data-value=' + i + '> ' + OrgTypes[i] + '</div>');
+            }
+*/
             $('.ui.fluid.search.selection.dropdown.entity_type').dropdown("refresh")
             $('.ui.fluid.search.selection.dropdown.entity_type').dropdown('set selected', 0);
             function treeWrapper(entity_name,entity_type) {
@@ -386,7 +409,6 @@
                     params.data = tempData;
                     // params.pristinaData = JSON.parse(JSON.stringify(tempData));
                     drawOrganizationChart(params);
-
                 }
             }
 

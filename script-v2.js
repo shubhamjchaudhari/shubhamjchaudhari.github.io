@@ -1,6 +1,6 @@
 function drawOrganizationChart(params) {
     listen();
-    // console.log(params)
+    // // console.log(params)
     params.funcs.expandAll = expandAll;
     params.funcs.search = searchUsers;
     params.funcs.closeSearchBox = closeSearchBox;
@@ -13,7 +13,8 @@ function drawOrganizationChart(params) {
     params.funcs.locate = locate;
     params.funcs.download = JSONdownload;
     params.funcs.rename_node = rename_node;
-    params.funcs.create_node = create_node;
+	params.funcs.create_node = create_node;
+	params.funcs.fitToScreen = fitToScreen;
 
     // connstant needs to be updated as data changes
     //
@@ -24,6 +25,7 @@ function drawOrganizationChart(params) {
     var OrgTypesLevel5 = ['OUTLET'];
     var PAGINATION = 3;
 
+	var previousScaleLevel = 1;
     var selectedNodeId = "";
     var selectedNodeBgColor = "";
     var create_node_modal_active = false;
@@ -56,11 +58,11 @@ function drawOrganizationChart(params) {
         nodeWidth: 270,
         duration: 600,
         rootNodeTopMargin: 20,
-        minMaxZoomProportions: [0.05, 3],
+        minMaxZoomProportions: [0.0005, 200],
         linkLineSize: 150,
         collapsibleFontSize: '15px',
         userIcon: '\uf007',
-        nodeStroke: "#cecece",
+        nodeStroke: "teal",
         nodeStrokeWidth: '1px'
     }
 
@@ -140,13 +142,17 @@ function drawOrganizationChart(params) {
     };
     
     var svg = d3.select(attrs.selector)
-        .append("svg") 
+		.append("svg")
+		.attr('id', 'svgDiv')
         .attr("width", attrs.width)
-        .attr("height", attrs.height)
+		.attr("height", attrs.height)
+		.attr("viewBox", "0 0 " + attrs.width + " " + attrs.height )
+		.attr("preserveAspectRatio", "xMinYMin meet")
         .attr("margin-left", (window.innerWidth - attrs.width))
         .attr("top", 0)
         .call(zoomBehaviours)
-        .append("g")
+		.append("g")
+		.attr('id', 'drawArea')
         .attr("transform", "translate(" + attrs.width / 2 + "," + 20 + ")");
         // filters go in defs element
    
@@ -167,7 +173,7 @@ function drawOrganizationChart(params) {
         if (d && d.kids) {
             d.page = 1;
             d.children = [];
-            console.log(d.ENTITY_NAME)
+            // console.log(d.ENTITY_NAME)
             
             d.kids.forEach(function (d1, i) {
               
@@ -182,16 +188,16 @@ function drawOrganizationChart(params) {
     addPageno(attrs.root) 
     
 
-    console.log("********************************");
-    console.log(attrs.root);
+    // console.log("********************************");
+    // console.log(attrs.root);
     expand(attrs.root);
     
     if (attrs.root.children) {
         attrs.root.children.forEach(collapse);
     }
       
-    console.log("********************************");
-    console.log(attrs.root);
+    // console.log("********************************");
+    // console.log(attrs.root);
 
 
     update(attrs.root);
@@ -230,8 +236,6 @@ function drawOrganizationChart(params) {
         }
     }
 
-
-
     function create_node() {
         if (create_node_parent && create_node_modal_active) {
             if (create_node_parent._children != null) {
@@ -264,7 +268,7 @@ function drawOrganizationChart(params) {
                 "ENTITY_SREP_ACCESS": "N",
                 "children": null
             };
-            // console.log('Create Node name: ' + name);
+            // // console.log('Create Node name: ' + name);
             create_node_parent.children.push(new_node);
             create_node_modal_active = false;
             $('#CreateNodeName').val('');
@@ -277,7 +281,7 @@ function drawOrganizationChart(params) {
     function rename_node() {
         if (node_to_rename && rename_node_modal_active) {
             name = $('#RenameNodeName').val();
-            console.log('New Node name: ' + name);
+            // console.log('New Node name: ' + name);
             node_to_rename.ENTITY_NAME = name;
             rename_node_modal_active = false;
 
@@ -294,7 +298,7 @@ function drawOrganizationChart(params) {
             {
                 title: 'Rename node',
                 action: function (elm, d, i) {
-                    console.log('Rename node');
+                    // console.log('Rename node');
                     $("#RenameNodeName").val(d.name);
                     rename_node_modal_active = true;
                     node_to_rename = d
@@ -304,14 +308,14 @@ function drawOrganizationChart(params) {
             {
                 title: 'Delete node',
                 action: function (elm, d, i) {
-                    console.log('Delete node');
+                    // console.log('Delete node');
                     delete_node(d);
                 }
             },
             {
                 title: 'Create child node',
                 action: function (elm, d, i) {
-                    console.log('Create child node');
+                    // console.log('Create child node');
                     create_node_parent = d;
                     create_node_modal_active = true;
                     $('#CreateNodeModal').modal('show');
@@ -363,7 +367,7 @@ function drawOrganizationChart(params) {
         
         circularRemovedNode = JSON.stringify(myvar, getCircularReplacer(true)); //Stringify a second time to delete the properties you don't need
 
-        // console.log(circularRemovedNode); //You have your json in myvar
+        // // console.log(circularRemovedNode); //You have your json in myvar
 
 
         function pan(domNode, direction) {
@@ -440,8 +444,8 @@ function drawOrganizationChart(params) {
                 dragStarted = true;
                 nodes = tree.nodes(d);
                 d3.event.sourceEvent.stopPropagation()
-                // console.log("drag started")
-                // console.log("event to strat drag",d3.event)
+                // // console.log("drag started")
+                // // console.log("event to strat drag",d3.event)
 
             })
             .on("drag", function (d) {
@@ -486,9 +490,9 @@ function drawOrganizationChart(params) {
                 var node = d3.select(this);
                 
                 node.attr("transform", "translate(" + d.x0 + "," + d.y0 + ")")
-                // console.log("ELEMENT POS",d.x0,d3.event.dy,d.y0,d3.event.dx)
-                // console.log("dragging")
-                // console.log("event to  draggging",d3.event)
+                // // console.log("ELEMENT POS",d.x0,d3.event.dy,d.y0,d3.event.dx)
+                // // console.log("dragging")
+                // // console.log("event to  draggging",d3.event)
             })
             .on("dragend", function (d) {
                 if (d == attrs.root) {
@@ -514,13 +518,13 @@ function drawOrganizationChart(params) {
                     // Make sure that the node being added to is expanded so user can see added node is correctly moved
                     // expand(selectedNode);
                     // sortTree();
-                    console.log("dragged", selectedNode, "into", draggingNode)
+                    // console.log("dragged", selectedNode, "into", draggingNode)
                     endDrag();
 
                 } else {
                     endDrag();
                 }
-                // console.log("drag-ended")
+                // // console.log("drag-ended")
             });
         function endDrag() {
             selectedNode = null;
@@ -659,7 +663,7 @@ function drawOrganizationChart(params) {
             })
 
         collapsiblesWrapper.on("click", click);
-        // console.log("collaps wrapper", collapsiblesWrapper);
+        // // console.log("collaps wrapper", collapsiblesWrapper);
         nodeGroup.append("text")
         	.attr('id', function(d) {
             	return ('N' + d.uniqueIdentifier +"name");
@@ -771,7 +775,7 @@ function drawOrganizationChart(params) {
         // d3.select()
         // Transition exiting nodes to the parent's new position.
         // #exit
-        console.log("WIll exit",param)
+        // console.log("WIll exit",param)
             var nodeExit = node.exit()
             .attr('opacity', 1)
             .transition()
@@ -811,7 +815,7 @@ function drawOrganizationChart(params) {
             // })
             .attr("stroke", function (d) {
                 
-                // console.log(RelationSubtypeColors[d.target.REL_TYPE])
+                // // console.log(RelationSubtypeColors[d.target.REL_TYPE])
                 // return "#cfcfcf"
                 return RelationSubtypeColors[d.target.REL_TYPE]
             })
@@ -926,7 +930,7 @@ function drawOrganizationChart(params) {
                 //     var y = currPar.y+ 80 + 20;
                 //     var x = currPar.x+ 140 ;
                 // }
-                // console.log(currPar);
+                // // console.log(currPar);
                 // debugger;
                 return "translate(" + x + "," + y + ")";
               }).on("click", paginate);
@@ -968,7 +972,7 @@ function drawOrganizationChart(params) {
           });
           
           function paginate(d,) {
-            console.log(d, "paginate_data")
+            // console.log(d, "paginate_data")
             d.parent.page = d.no;
             
             setPage(d.parent);
@@ -976,7 +980,7 @@ function drawOrganizationChart(params) {
             update(attrs.root,{
                 parent_page: [d.parent.x0,d.parent.y0]
             });
-            console.log("after paginate",attrs.root)
+            // console.log("after paginate",attrs.root)
           }
           function setPage(d) {
             if (d && d.kids) {
@@ -994,7 +998,7 @@ function drawOrganizationChart(params) {
 
         // if (param && param.locate) {
             
-        //     console.log("located");
+        //     // console.log("located");
         //     debugger;
         //     var x;
         //     var y;
@@ -1087,7 +1091,7 @@ function drawOrganizationChart(params) {
         function tooltipContent(item) {
 
             var strVar = "";
-            // console.log(item)
+            // // console.log(item)
             strVar += '<div class="ui card">'
             strVar += '<div class="content">'
             strVar += '<img class="right floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
@@ -1114,7 +1118,7 @@ function drawOrganizationChart(params) {
 
         function tooltipHoverHandler(d) {
 
-            // console.log("Event from tooltip hover",d3.event)
+            // // console.log("Event from tooltip hover",d3.event)
             // if(d3.event.fromElement.tagName != "rect"){return;}
             var content = tooltipContent(d);
             tooltip.html(content);
@@ -1146,7 +1150,7 @@ function drawOrganizationChart(params) {
         function sideBarHandler(d) {
             var content = sideBarContent(d)
             if (selectedNodeId != "") {
-	            d3.select(selectedNodeId).attr("stroke", "#cecece")
+	            d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
 	            d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
             }
 
@@ -1158,11 +1162,11 @@ function drawOrganizationChart(params) {
 	        selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
 
             d3.select('#detailsSideBar').html(content)
-            console.log(d.uniqueIdentifier)
+            // console.log(d.uniqueIdentifier)
             d3.select(selectedNodeId).attr("stroke", "#f00")
             d3.select(selectedNodeId).attr("fill", "#fee")
 
-            console.log("sidebar")
+            // console.log("sidebar")
         }
 
 
@@ -1216,14 +1220,14 @@ function drawOrganizationChart(params) {
             //     sidebar.style('opacity', '0').style('display', 'none');
 
             // }
-        });
+		});
+	}
 
-    }
-
+	//********************************************************************************************************************************************** */
     // Toggle children on click.
     function click(d) {
         // if (d3.event.defaultPrevented) return; // click suppressed
-        // console.log("Event Printing", d3.event);
+        // // console.log("Event Printing", d3.event);
         
         d3.select(this).select("text").text(function (dv) {
 
@@ -1253,7 +1257,7 @@ function drawOrganizationChart(params) {
 
     //Redraw for zoom
     function redraw() {
-        //console.log("here", d3.event.translate, d3.event.scale);
+        //// console.log("here", d3.event.translate, d3.event.scale);
         svg.attr("transform",
             "translate(" + d3.event.translate + ")" +
             " scale(" + d3.event.scale + ")");
@@ -1401,10 +1405,30 @@ function drawOrganizationChart(params) {
             }
 
         });
-    }
+	}
+	
+	function fitToScreen(paddingPercent = 0.95, transitionDuration=500) {
+		var root = d3.select('#drawArea');
+		var bounds = root.node().getBBox();
+		var parent = root.node().parentElement;
+		var fullWidth = parent.clientWidth,
+			fullHeight = parent.clientHeight;
+		var width = bounds.width,
+			height = bounds.height;
+		var midX = bounds.x + width / 2,
+			midY = bounds.y + height / 2;
+		if (width == 0 || height == 0) return; // nothing to fit
+		var scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
+		var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
+	
+		console.trace("zoomFit", translate, scale);
+		root
+			.transition()
+			.duration(transitionDuration || 0) // milliseconds
+			.call(zoomBehaviours.translate(translate).scale(scale).event);
+	}
 
     function searchUsers() {
-
         d3.selectAll('.user-search-box')
             .transition()
             .duration(250)
@@ -1519,9 +1543,9 @@ function drawOrganizationChart(params) {
 
     function locateRecursive(d, id) {
         if (d.uniqueIdentifier == id) {
-            console.log("before expand", d)
+            // console.log("before expand", d)
             expandParents(d);
-            console.log("after expand", d)
+            // console.log("after expand", d)
         } else if (d._children) {
             d._children.forEach(function (ch) {
                 ch.parent = d;
@@ -1587,7 +1611,7 @@ function drawOrganizationChart(params) {
     }
 
     //locateRecursive
-    function locate(id) {
+    function locate(id, recursive = true) {
         
         /* collapse all and expand logged user nodes */
         // if (!attrs.root.children) {
@@ -1606,9 +1630,9 @@ function drawOrganizationChart(params) {
         var copy_object = _.cloneDeep(attrs.root)
         expand(copy_object)
         var  final_path = Array.from(new Set(recfind (copy_object, id,[])))
-        console.log(final_path)
+        // console.log(final_path)
         final_path.forEach(element => {
-            console.log("path",element)
+            // console.log("path",element)
         });
         final_path.shift()
 
@@ -1618,24 +1642,30 @@ function drawOrganizationChart(params) {
         
         expandSelectedNodes(attrs.root,final_path)
 
+		update(attrs.root, {
+            locate: id
+        })
+/*
         update(attrs.root, {
             locate: id
-        });
+        }).then( function() {
+			alert("hello")
+		})*/
 
 
 		if (selectedNodeId != "") {
-            d3.select(selectedNodeId).attr("stroke", "#cecece")
+            d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
             d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
         }
 
-        //sidebar.html(content);
-        //d3.select('.sidebar-wrapper').style('display', 'block').style('opacity', 1)
-            //$('#sideBar').show()
-
-        selectedNodeId = ("#N" + id)
-        selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
-
-        console.log(id)
+		selectedNodeId = ("#N" + id)
+		if (d3.select(selectedNodeId) == null) {
+        	selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
+		}
+		else {
+			selectedNodeBgColor = "#cecece"
+		}
+        // console.log(id)
         d3.select(selectedNodeId).attr("stroke", "#f00")
         d3.select(selectedNodeId).attr("stroke-width", "1px")
         d3.select(selectedNodeId).attr("fill", "#fdd")
@@ -1643,26 +1673,28 @@ function drawOrganizationChart(params) {
         //document.getElementById(selectedNodeId.replace('#', '')).click()
 
         var elem = document.getElementById(selectedNodeId.replace('#', ''))
+		if (elem != null) {
+			var evt = document.createEvent("MouseEvents");
+			evt.initMouseEvent(
+			"click", /* type */
+			true, /* canBubble */
+			true, /* cancelable */
+			window, /* view */
+			0, /* detail */
+			0,  /* screenX */
+			0, /* screenY */
+			0, /* clientX */
+			0, /* clientY */
+			false, /* ctrlKey */
+			false, /* altKey */
+			false, /* shiftKey */
+			false, /* metaKey */
+			0, /* button */
+			null); /* relatedTarget */
 
-        var evt = document.createEvent("MouseEvents");
-    evt.initMouseEvent(
-        "click", /* type */
-        true, /* canBubble */
-        true, /* cancelable */
-        window, /* view */
-        0, /* detail */
-        0,  /* screenX */
-        0, /* screenY */
-        0, /* clientX */
-        0, /* clientY */
-        false, /* ctrlKey */
-        false, /* altKey */
-        false, /* shiftKey */
-        false, /* metaKey */
-        0, /* button */
-        null); /* relatedTarget */
-    elem.dispatchEvent(evt);
-    }
+			elem.dispatchEvent(evt);			
+		}
+	}
 
 
     function deepClone(item) {
@@ -1739,7 +1771,7 @@ function drawOrganizationChart(params) {
     // Function to update the temporary connector indicating dragging affiliation
     var updateTempConnector = function () {
         var data = [];
-        // console.log('draggingNode', draggingNode, "selectedNode", selectedNode)
+        // // console.log('draggingNode', draggingNode, "selectedNode", selectedNode)
         if (draggingNode !== null && selectedNode !== null) {
             // have to flip the source coordinates since we did this for the existing connectors on the original tree
             data = [{
@@ -1753,7 +1785,7 @@ function drawOrganizationChart(params) {
                 }
             }];
         }
-        // console.log("data-d",data)
+        // // console.log("data-d",data)
         var link = svg.selectAll(".templink").data(data);
         
         link.enter().append("path")
@@ -1768,7 +1800,7 @@ function drawOrganizationChart(params) {
 
     function recfind (node, value,path){    
         if (node.uniqueIdentifier == value){
-            console.log("XXXXfound the elementXXXX")
+            // console.log("XXXXfound the elementXXXX")
             path.push(node)
             return path
         }
@@ -1788,7 +1820,7 @@ function drawOrganizationChart(params) {
           if (node.children && node.children[node.children.length-1].uniqueIdentifier != node.kids[node.kids.length - 1].uniqueIdentifier  )
           {
             var currPageNo  = node.children[0].pageNo
-            console.log("cuurent Page",currPageNo)
+            // console.log("cuurent Page",currPageNo)
             node.children = node.kids.filter( kid => kid.pageNo == currPageNo+1)
 
             path.push(node)
