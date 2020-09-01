@@ -23,9 +23,32 @@ function drawOrganizationChart(params) {
     var OrgTypesLevel3 = ['IDN_Filled', 'HOSP', 'OSUB_Filled'];
     var OrgTypesLevel4 = ['CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT', 'HOSP_Filled'];
     var OrgTypesLevel5 = ['OUTLET'];
-    var PAGINATION = 3;
-
-	var previousScaleLevel = 1;
+	var PAGINATION = 3;
+	
+	var OrgTypeLevel = {
+		'All': 6,
+		'IDN': 1,
+		'IDN_Filled' : 2,
+		'OSUB' : 2,
+		'IDN_Filled' : 3,
+		'HOSP' : 3,
+		'OSUB_Filled' : 3,
+		'CLIN': 4,
+		'PHAR': 4,
+		'INDP' : 4,
+		'WHOL' : 4,
+		'UNSPEC' : 4,
+		'CLIN' : 4,
+		'RC' : 4,
+		'PAYR' : 4,
+		'INDP' : 4,
+		'PHAR' : 4,
+		'HMHLT' : 4,
+		'HOSP_Filled' : 4,
+		'OUTLET' : 5
+	}
+	console.log(OrgTypeLevel[params.entityType])
+	var selectedEntityLevel = OrgTypeLevel[params.entityType];
     var selectedNodeId = "";
     var selectedNodeBgColor = "";
     var create_node_modal_active = false;
@@ -603,7 +626,8 @@ function drawOrganizationChart(params) {
                 if (d.isLoggedUser) res += 'nodeRepresentsCurrentUser ';
                 res += d._children || d.children ? "nodeHasChildren" : "nodeDoesNotHaveChildren";
                 return res;
-            });
+			});
+			
         nodeGroup.append("circle")
             .attr('class', 'ghostCircle')
             .attr("r", 30)
@@ -615,55 +639,60 @@ function drawOrganizationChart(params) {
             })
             .on("mouseout", function (node) {
                 outCircle(node);
-            });
+			});
+			
+			console.log(source)
+			
+		if (true) {
+			/*var collapsiblesWrapper = nodeEnter.append('g')
+				.attr('class', 'collapsible-circle')
+				.attr('data-id', function (v) {
+					return v.uniqueIdentifier;
+				});
 
-        var collapsiblesWrapper = nodeEnter.append('g')
-            .attr('class', 'collapsible-circle')
-            .attr('data-id', function (v) {
-                return v.uniqueIdentifier;
-            });
+			// collapsiblesWrapper.append("rect")
+			//     .attr('class', 'node-collapse-right-rect')
+			//     .attr('height', attrs.collapseCircleRadius)
+			//     .attr('fill', 'black')
+			//     .attr('x', attrs.nodeWidth/2 )
+			//     .attr('y', attrs.nodeHeight - 7)
+			//     .attr("width", function (d) {
+			//         if (d.children || d._children) return attrs.collapseCircleRadius;
+			//         return 0;
+			//     })
 
-        // collapsiblesWrapper.append("rect")
-        //     .attr('class', 'node-collapse-right-rect')
-        //     .attr('height', attrs.collapseCircleRadius)
-        //     .attr('fill', 'black')
-        //     .attr('x', attrs.nodeWidth/2 )
-        //     .attr('y', attrs.nodeHeight - 7)
-        //     .attr("width", function (d) {
-        //         if (d.children || d._children) return attrs.collapseCircleRadius;
-        //         return 0;
-        //     })
+			var collapsibles =
+				collapsiblesWrapper.append("circle")
+					.attr('class', 'node-collapse')
+					.attr('cx', attrs.nodeWidth/2)
+					.attr('cy', attrs.nodeHeight )
+					.attr("", setCollapsibleSymbolProperty);
 
-        var collapsibles =
-            collapsiblesWrapper.append("circle")
-                .attr('class', 'node-collapse')
-                .attr('cx', attrs.nodeWidth/2)
-                .attr('cy', attrs.nodeHeight )
-                .attr("", setCollapsibleSymbolProperty);
+			//hide collapse rect when node does not have children
+			collapsibles.attr("r", function (d) {
+				if (d.children || d._children) return attrs.collapseCircleRadius;
+				return 0;
+			})
+				.attr("height", attrs.collapseCircleRadius)
 
-        //hide collapse rect when node does not have children
-        collapsibles.attr("r", function (d) {
-            if (d.children || d._children) return attrs.collapseCircleRadius;
-            return 0;
-        })
-            .attr("height", attrs.collapseCircleRadius)
+			collapsiblesWrapper.append("text")
+				.attr('class', 'text-collapse')
+				.attr("x", attrs.nodeWidth/2 )
+				.attr('y', attrs.nodeHeight +4.5)
+				.attr('width', attrs.collapseCircleRadius)
+				.attr('height', attrs.collapseCircleRadius)
+				.style('font-size', attrs.collapsibleFontSize)
+				.attr("text-anchor", "middle")
+				.style('font-family', 'Fira Code')
+				.style('font-weight', '500')
+				.text(function (d) {
+					return d.collapseText;
+				})
 
-        collapsiblesWrapper.append("text")
-            .attr('class', 'text-collapse')
-            .attr("x", attrs.nodeWidth/2 )
-            .attr('y', attrs.nodeHeight +4.5)
-            .attr('width', attrs.collapseCircleRadius)
-            .attr('height', attrs.collapseCircleRadius)
-            .style('font-size', attrs.collapsibleFontSize)
-            .attr("text-anchor", "middle")
-            .style('font-family', 'Fira Code')
-            .style('font-weight', '500')
-            .text(function (d) {
-                return d.collapseText;
-            })
+			collapsiblesWrapper.on("click", click);
+			// // console.log("collaps wrapper", collapsiblesWrapper);*/
+		}
 
-        collapsiblesWrapper.on("click", click);
-        // // console.log("collaps wrapper", collapsiblesWrapper);
         nodeGroup.append("text")
         	.attr('id', function(d) {
             	return ('N' + d.uniqueIdentifier +"name");
@@ -687,7 +716,58 @@ function drawOrganizationChart(params) {
                 var position = d.ENTITY_ORG_TYPE.substring(0, 27);
                 if (position.length < d.ENTITY_ORG_TYPE.length) {
                     position = position.substring(0, 24) + '...'
-                }
+				}
+				console.log(position)
+
+				if (OrgTypeLevel[position] < selectedEntityLevel) {
+					var collapsiblesWrapper = nodeEnter.append('g')
+					.attr('class', 'collapsible-circle')
+					.attr('data-id', function (v) {
+						return v.uniqueIdentifier;
+					});
+	
+				// collapsiblesWrapper.append("rect")
+				//     .attr('class', 'node-collapse-right-rect')
+				//     .attr('height', attrs.collapseCircleRadius)
+				//     .attr('fill', 'black')
+				//     .attr('x', attrs.nodeWidth/2 )
+				//     .attr('y', attrs.nodeHeight - 7)
+				//     .attr("width", function (d) {
+				//         if (d.children || d._children) return attrs.collapseCircleRadius;
+				//         return 0;
+				//     })
+	
+				var collapsibles =
+					collapsiblesWrapper.append("circle")
+						.attr('class', 'node-collapse')
+						.attr('cx', attrs.nodeWidth/2)
+						.attr('cy', attrs.nodeHeight )
+						.attr("", setCollapsibleSymbolProperty);
+	
+				//hide collapse rect when node does not have children
+				collapsibles.attr("r", function (d) {
+					if (d.children || d._children) return attrs.collapseCircleRadius;
+					return 0;
+				})
+					.attr("height", attrs.collapseCircleRadius)
+	
+				collapsiblesWrapper.append("text")
+					.attr('class', 'text-collapse')
+					.attr("x", attrs.nodeWidth/2 )
+					.attr('y', attrs.nodeHeight +4.5)
+					.attr('width', attrs.collapseCircleRadius)
+					.attr('height', attrs.collapseCircleRadius)
+					.style('font-size', attrs.collapsibleFontSize)
+					.attr("text-anchor", "middle")
+					.style('font-family', 'Fira Code')
+					.style('font-weight', '500')
+					.text(function (d) {
+						return d.collapseText;
+					})
+	
+				collapsiblesWrapper.on("click", click);
+				}
+
                 return position;
             })
 
@@ -1150,7 +1230,8 @@ function drawOrganizationChart(params) {
         function sideBarHandler(d) {
             var content = sideBarContent(d)
             if (selectedNodeId != "") {
-	            d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
+				d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
+				d3.select(selectedNodeId).attr("stroke-width", "1px")
 	            d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
             }
 
@@ -1163,8 +1244,9 @@ function drawOrganizationChart(params) {
 
             d3.select('#detailsSideBar').html(content)
             // console.log(d.uniqueIdentifier)
-            d3.select(selectedNodeId).attr("stroke", "#f00")
-            d3.select(selectedNodeId).attr("fill", "#fee")
+			d3.select(selectedNodeId).attr("stroke", "teal")
+			d3.select(selectedNodeId).attr("stroke-width", "2px")
+            d3.select(selectedNodeId).attr("fill", "aquamarine")
 
             // console.log("sidebar")
         }
@@ -1300,7 +1382,7 @@ function drawOrganizationChart(params) {
 
     function addPropertyRecursive(propertyName, propertyValueFunction, element) {
         if (element[propertyName]) {
-            element[propertyName] = element[propertyName] + ' ' + propertyValueFunction(element);
+           // element[propertyName] = element[propertyName] + ' ' + propertyValueFunction(element);
         } else {
             element[propertyName] = propertyValueFunction(element);
         }
@@ -1654,7 +1736,8 @@ function drawOrganizationChart(params) {
 
 
 		if (selectedNodeId != "") {
-            d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
+			d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
+			d3.select(selectedNodeId).attr("stroke-width", "1px")
             d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
         }
 
@@ -1663,12 +1746,12 @@ function drawOrganizationChart(params) {
         	selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
 		}
 		else {
-			selectedNodeBgColor = "#cecece"
+			selectedNodeBgColor = "#fff"
 		}
         // console.log(id)
         d3.select(selectedNodeId).attr("stroke", "#f00")
-        d3.select(selectedNodeId).attr("stroke-width", "1px")
-        d3.select(selectedNodeId).attr("fill", "#fdd")
+        d3.select(selectedNodeId).attr("stroke-width", "2px")
+        d3.select(selectedNodeId).attr("fill", "aquamarine")
 
         //document.getElementById(selectedNodeId.replace('#', '')).click()
 

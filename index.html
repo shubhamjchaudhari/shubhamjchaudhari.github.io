@@ -59,7 +59,7 @@
             	</div>
             </div>
             <div class="dropdown-box3">
-            	<div class="ui fluid search multiple selection dropdown entity_type" style="width: 150px;">
+            	<div class="ui fluid search selection dropdown entity_type" style="width: 150px;">
             		<input type="hidden" name="country">
             		<i class="dropdown icon"></i>
             		<div class="default text">Entity Types</div>
@@ -283,6 +283,7 @@
     </div>
 
 	<button  id="fitToScreenButton" type="button" style="position: absolute;" onclick="params.funcs.fitToScreen()" class="autofit-button"><i class="fa fa-arrows"></i> Autofit</button>
+	
     <script type="text/javascript" src="script-v2.js"></script>
     <script>
     	var params = {
@@ -303,8 +304,11 @@
     			locate: null,
     			download: null
     		},
+			entityType: '',
     		data: null
     	}
+
+		var selectedEntity = 0;
 
 		d3.select('#fitToScreenButton').style('top', "75px")
 		d3.select('#fitToScreenButton').style('left', (window.innerWidth - 115) + "px")
@@ -358,14 +362,15 @@
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
     				console.log('value is ' + value)
-    					treeWrapper(value,'All');
+					selectedEntity = value;
+    					treeWrapper(value, 'All');
     			}
     		});
     		$('.ui.fluid.search.selection.dropdown.entity_type').dropdown({
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
-    				console.log('value is ' + value)
-    				treeWrapper(value);
+    				console.log('value is ' + text)
+    				treeWrapper(selectedEntity, text);
     			}
     		});
 
@@ -400,6 +405,7 @@
                 var tempData = data[entity_name];
                 if(entity_type == 'All') {   
                 	params.data = tempData;
+					params.entityType = 'All';
                     // params.pristinaData = JSON.parse(JSON.stringify(tempData));
                     drawOrganizationChart(params);
                 }       
@@ -407,6 +413,7 @@
                     // debugger;
                     // entity_type.push ('IDN','IDN_Filled','OSUB','OSUB_Filled','HOSP_Filled','HOSP')
                     params.data = tempData;
+					params.entityType = entity_type;
                     // params.pristinaData = JSON.parse(JSON.stringify(tempData));
                     drawOrganizationChart(params);
                 }
@@ -418,6 +425,7 @@
             for (var i=0; i<entityCount; i+=1) {
             	if (children[i].textContent.toLowerCase().includes('Providence Saint Joseph Health'.toLowerCase())) {
             		treeWrapper(i,'All');
+					selectedEntity = i;
             		d3.select('#selectedEntity').text(children[i].textContent);
             			break;
             	}
