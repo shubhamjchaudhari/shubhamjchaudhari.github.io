@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,7 +18,9 @@
 	integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
 	crossorigin="anonymous"></script>
 	<script src="d3-context-menu.js"></script>
+	
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+
 	<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
 </head>
@@ -50,28 +51,28 @@
                 </div>
             </div> -->
             <div class="dropdown-box">
-            	<div class="ui fluid search selection dropdown entity_name">
+            	<div class="ui fluid search selection dropdown entity_name" style="max-height: 35px;">
             		<input type="hidden" name="country">
             		<i class="dropdown icon"></i>
-            		<div class="default text" id="selectedEntity">Select IDN</div>
+            		<div class="default text" id="selectedEntity" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">Select IDN</div>
             		<div class="menu" id="entityNameMenu">
             		</div>
             	</div>
             </div>
             <div class="dropdown-box3">
-            	<div class="ui fluid search selection dropdown entity_type" style="width: 150px;">
+            	<div class="ui fluid search selection dropdown entity_type" style="width: 150px; max-height: 35px;">
             		<input type="hidden" name="country">
             		<i class="dropdown icon"></i>
-            		<div class="default text">Entity Types</div>
+            		<div class="default text" id="selectedType" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">Entity Types</div>
             		<div class="menu">
             		</div>
             	</div>
             </div>
-            <div class="dropdown-box4" hidden>
-            	<div class="ui fluid search selection dropdown">
+            <div class="dropdown-box4">
+            	<div class="ui fluid search selection dropdown view_color" style="width: 200px; max-height: 35px;">
             		<input type="hidden" name="country">
             		<i class="dropdown icon"></i>
-            		<div class="default text">View colors by</div>
+            		<div class="default text" id="selectedColorBy" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">View colors by</div>
             		<div class="menu">
             		</div>
             	</div>
@@ -113,8 +114,8 @@
     				<!--<div class="input-bottom-placeholder">By Account Name</div>-->
     			</div>
     		</div>
-    		<div class="result-box">
-    			<div class="result-header"> RESULTS </div>
+    		<div class="result-box"  id="searchbar">
+    			<div class="result-header" id="searchResultCount"> RESULTS </div>
     			<div class="result-list">
     				<div class="buffer"></div>
     			</div>
@@ -275,6 +276,48 @@
     	</div>
     </div>
 
+	    <div class="legendB1">
+    		<div class="ui middle aligned  list">
+    			<div class="item">
+    				<div class="input-color">
+    					<div class="color-box-b" id="lowCategory" style="background-color: black;"></div>
+    				</div>
+    				<div class="content">
+    					Low
+    				</div>
+    			</div>
+    		</div>
+    	</div>
+    </div>
+
+	    <div class="legendB2">
+    		<div class="ui middle aligned  list">
+    			<div class="item">
+    				<div class="input-color">
+    					<div class="color-box-b" id="mediumCategory" style="background-color: black;"></div>
+    				</div>
+    				<div class="content">
+    					Medium
+    				</div>
+    			</div>
+    		</div>
+    	</div>
+    </div>
+
+	    <div class="legendB3">
+    		<div class="ui middle aligned  list">
+    			<div class="item">
+    				<div class="input-color">
+    					<div class="color-box-b" id="highCategory" style="background-color: black;"></div>
+    				</div>
+    				<div class="content">
+    					High
+    				</div>
+    			</div>
+    		</div>
+    	</div>
+    </div>
+
 
     <div class="details-side-bar" id="detailsSideBar" style="border: 2px solid teal">
     </div>
@@ -282,7 +325,9 @@
 
     </div>
 
-	<button  id="fitToScreenButton" type="button" style="position: absolute;" onclick="params.funcs.fitToScreen()" class="autofit-button"><i class="fa fa-arrows"></i> Autofit</button>
+	<button id="fitToScreenButton" type="button" style="position: absolute;" onclick="params.funcs.fitToScreen()" class="svg-button"><i class="fa fa-arrows"></i></button>
+	<button id="expandAllButton" type="button" style="position: absolute;" onclick="params.funcs.expandAll()" class="svg-button"><i class="fa fa-plus-square"></i></button>
+	<button id="collapseAllButton" type="button" style="position: absolute;" onclick="params.funcs.collapseAll()" class="svg-button"><i class="fa fa-minus-square"></i></button>
 	
     <script type="text/javascript" src="script-v2.js"></script>
     <script>
@@ -302,16 +347,38 @@
     			back: null,
     			toggleFullScreen: null,
     			locate: null,
-    			download: null
+    			download: null,
+				collapseAll: null
     		},
 			entityType: '',
-    		data: null
+    		data: null,
+			colorCategory: {
+				'low': '#F5B7B1',
+				'medium': '#F9E79F',
+				'high': '#A8FFD8'
+			}
     	}
 
-		var selectedEntity = 0;
+		d3.select('#lowCategory').style('background-color', params.colorCategory.low)
+		d3.select('#mediumCategory').style('background-color', params.colorCategory.medium)
+		d3.select('#highCategory').style('background-color', params.colorCategory.high)
 
-		d3.select('#fitToScreenButton').style('top', "75px")
-		d3.select('#fitToScreenButton').style('left', (window.innerWidth - 115) + "px")
+		d3.select('.legendB1').style('display', 'none')
+		d3.select('.legendB2').style('display', 'none')
+		d3.select('.legendB3').style('display', 'none')
+
+		var selectedEntity = 0;
+		var selected_org_type = 0;
+		var selected_view_color = 0;
+
+		d3.select('#fitToScreenButton').style('top', "70px")
+		d3.select('#fitToScreenButton').style('left', (window.innerWidth - 100) + "px")
+
+		d3.select('#expandAllButton').style('top', "100px")
+		d3.select('#expandAllButton').style('left', (window.innerWidth - 100) + "px")
+
+		d3.select('#collapseAllButton').style('top', "130px")
+		d3.select('#collapseAllButton').style('left', (window.innerWidth - 100) + "px")
 
 
     	var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3)
@@ -334,16 +401,21 @@
     	d3.select('.legend7').style('top', (window.innerHeight - 30) + "px")
     	d3.select('.legend8').style('top', (window.innerHeight - 30) + "px")
 
-    	d3.select('.legend1').style('left', (detailsSideBarWidth + 25) + "px")
-    	d3.select('.legend2').style('left', (detailsSideBarWidth + 150) + "px")
-    	d3.select('.legend3').style('left', (detailsSideBarWidth + 275) + "px")
-    	d3.select('.legend4').style('left', (detailsSideBarWidth + 400) + "px")
-    	d3.select('.legend5').style('left', (detailsSideBarWidth + 525) + "px")
-    	d3.select('.legend6').style('left', (detailsSideBarWidth + 650) + "px")
-    	d3.select('.legend7').style('left', (detailsSideBarWidth + 775) + "px")
-    	d3.select('.legend8').style('left', (detailsSideBarWidth + 900) + "px")
+    	d3.select('.legend1').style('left', (detailsSideBarWidth + 10) + "px")
+    	d3.select('.legend2').style('left', (detailsSideBarWidth + 100) + "px")
+    	d3.select('.legend3').style('left', (detailsSideBarWidth + 200) + "px")
+    	d3.select('.legend4').style('left', (detailsSideBarWidth + 310) + "px")
+    	d3.select('.legend5').style('left', (detailsSideBarWidth + 420) + "px")
+    	d3.select('.legend6').style('left', (detailsSideBarWidth + 520) + "px")
+    	d3.select('.legend7').style('left', (detailsSideBarWidth + 650) + "px")
+    	d3.select('.legend8').style('left', (detailsSideBarWidth + 775) + "px")
 
-		
+    	d3.select('.legendB1').style('top', (window.innerHeight - 30) + "px")
+    	d3.select('.legendB2').style('top', (window.innerHeight - 30) + "px")
+    	d3.select('.legendB3').style('top', (window.innerHeight - 30) + "px")
+		d3.select('.legendB1').style('left', (detailsSideBarWidth + 950) + "px")
+    	d3.select('.legendB2').style('left', (detailsSideBarWidth + 1020) + "px")
+    	d3.select('.legendB3').style('left', (detailsSideBarWidth + 1120) + "px")
 		//d3.select('#fitToScreenButton').style('left', (detailsSideBarWidth + 25) + "px")
 
     	function toTitleCase(str) {
@@ -352,7 +424,11 @@
     		});
     	}
 
+		document.getElementById('selectedType').innerHTML = 'All';
+		document.getElementById('selectedColorBy').innerHTML = 'None';
+
     	var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
+		var ViewColorByCategory = ['None', 'Patient Revenue', '	Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
 
     	d3.json("HES_V1_V5_HIERARCHY.json", function (error, data) {
     		if (error) {
@@ -363,22 +439,52 @@
     			onChange: function (value, text, $selectedItem) {
     				console.log('value is ' + value)
 					selectedEntity = value;
-    					treeWrapper(value, 'All');
+					document.getElementById('selectedType').innerHTML = 'All';
+
+					d3.select('.legendB1').style('display', 'none')
+					d3.select('.legendB2').style('display', 'none')
+					d3.select('.legendB3').style('display', 'none')
+					document.getElementById('selectedColorBy').innerHTML = 'None';
+    					treeWrapper(value, 'All', 0);
     			}
     		});
     		$('.ui.fluid.search.selection.dropdown.entity_type').dropdown({
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
     				console.log('value is ' + text)
-    				treeWrapper(selectedEntity, text);
+					selected_org_type = text;
+					document.getElementById('selectedColorBy').innerHTML = 'None';
+
+					d3.select('.legendB1').style('display', 'none')
+					d3.select('.legendB2').style('display', 'none')
+					d3.select('.legendB3').style('display', 'none')
+    				treeWrapper(selectedEntity, text, 0);
     			}
     		});
 
-            // console.log('data starts')
-            // console.log(data)
+			$('.ui.fluid.search.selection.dropdown.view_color').dropdown({
+    			fullTextSearch: true,
+    			onChange: function (value, text, $selectedItem) {
+    				console.log('color is ' + value)
+					selected_view_color = value;
+
+					if (value == 0) {
+						d3.select('.legendB1').style('display', 'none')
+						d3.select('.legendB2').style('display', 'none')
+						d3.select('.legendB3').style('display', 'none')
+					}
+					else {
+						d3.select('.legendB1').style('display', 'block')
+						d3.select('.legendB2').style('display', 'block')
+						d3.select('.legendB3').style('display', 'block')
+					}
+    				
+					treeWrapper(selectedEntity, selected_org_type, value);
+    			}
+    		});
+
             
             for (var i = 0; i < data.length; i++) {
-                // console.log(data[i])
                 $('.dropdown.entity_name .menu')
                 .append('<div class="item" data-value=' + i + '> ' + toTitleCase(data[i].ENTITY_NAME.toLowerCase()) + '</div>');
             }
@@ -390,33 +496,28 @@
                 $('.dropdown.entity_type .menu')
                 .append('<div class="item" data-value=' + i + '> ' + OrgTypes[i] + '</div>');
             }
-/*
-			for (var i = 0; i < OrgTypes.length; i++) {
-                // console.log(data[i])
-                $('#searchEntityType')
-                .append('<div class="item" data-value=' + i + '> ' + OrgTypes[i] + '</div>');
-            }
-*/
             $('.ui.fluid.search.selection.dropdown.entity_type').dropdown("refresh")
             $('.ui.fluid.search.selection.dropdown.entity_type').dropdown('set selected', 0);
-            function treeWrapper(entity_name,entity_type) {
+
+
+            for (var i = 0; i < ViewColorByCategory.length; i++) {
+                $('.dropdown.view_color .menu')
+                .append('<div class="item" data-value=' + i + '> ' + ViewColorByCategory[i] + '</div>');
+            }
+            $('.ui.fluid.search.selection.dropdown.view_color').dropdown("refresh")
+            $('.ui.fluid.search.selection.dropdown.view_color').dropdown('set selected', 0);
+
+            function treeWrapper(entity_name,entity_type, color_by) {
             	d3.selectAll("svg").remove();
+				console.log('Name: ' + entity_name)
                 // debugger;
                 var tempData = data[entity_name];
-                if(entity_type == 'All') {   
-                	params.data = tempData;
-					params.entityType = 'All';
-                    // params.pristinaData = JSON.parse(JSON.stringify(tempData));
-                    drawOrganizationChart(params);
-                }       
-                else{
-                    // debugger;
-                    // entity_type.push ('IDN','IDN_Filled','OSUB','OSUB_Filled','HOSP_Filled','HOSP')
-                    params.data = tempData;
-					params.entityType = entity_type;
-                    // params.pristinaData = JSON.parse(JSON.stringify(tempData));
-                    drawOrganizationChart(params);
-                }
+				params.data = tempData;
+				params.dataIndex = entity_name;
+				params.entityType = entity_type;
+				params.colorBy = color_by;
+				console.log('color: : ' + color_by)
+				drawOrganizationChart(params);
             }
 
             var entityCount = d3.select("#entityNameMenu").selectAll('div')[0].length;
@@ -424,7 +525,10 @@
 
             for (var i=0; i<entityCount; i+=1) {
             	if (children[i].textContent.toLowerCase().includes('Providence Saint Joseph Health'.toLowerCase())) {
-            		treeWrapper(i,'All');
+					document.getElementById('selectedEntity').innerHTML = 'Providence Saint Joseph Health';
+					selected_org_type = 'All';
+					selected_view_color = 0;
+					treeWrapper(i,'All', 0);
 					selectedEntity = i;
             		d3.select('#selectedEntity').text(children[i].textContent);
             			break;

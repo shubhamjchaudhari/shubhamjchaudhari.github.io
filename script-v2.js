@@ -1,23 +1,23 @@
 function drawOrganizationChart(params) {
     listen();
-    // // console.log(params)
-    params.funcs.expandAll = expandAll;
+
+	params.funcs.expandAll = expandAll;
     params.funcs.search = searchUsers;
     params.funcs.closeSearchBox = closeSearchBox;
     params.funcs.findInTree = findInTree;
     params.funcs.clearResult = clearResult;
     params.funcs.reflectResults = reflectResults;
-    // params.funcs.departmentClick = departmentClick;
-    // params.funcs.back = back;
     params.funcs.toggleFullScreen = toggleFullScreen;
     params.funcs.locate = locate;
     params.funcs.download = JSONdownload;
     params.funcs.rename_node = rename_node;
 	params.funcs.create_node = create_node;
 	params.funcs.fitToScreen = fitToScreen;
+	params.funcs.collapseAll = collapseAll;
+	params.funcs.expandAll = expandAll;
 
-    // connstant needs to be updated as data changes
-    //
+	var colorCategory = params.colorCategory;
+
     var OrgTypesLevel1 = ['IDN'];
     var OrgTypesLevel2 = ['IDN_Filled', 'OSUB'];
     var OrgTypesLevel3 = ['IDN_Filled', 'HOSP', 'OSUB_Filled'];
@@ -47,10 +47,10 @@ function drawOrganizationChart(params) {
 		'HOSP_Filled' : 4,
 		'OUTLET' : 5
 	}
-	console.log(OrgTypeLevel[params.entityType])
+
 	var selectedEntityLevel = OrgTypeLevel[params.entityType];
     var selectedNodeId = "";
-    var selectedNodeBgColor = "";
+    var selectedOriginalBackground = "";
     var create_node_modal_active = false;
     var rename_node_modal_active = false;
     var create_node_parent = null;
@@ -68,8 +68,8 @@ function drawOrganizationChart(params) {
     };
 
     var attrs = {
-        EXPAND_SYMBOL: '+', //\uf067 \uf106
-        COLLAPSE_SYMBOL: '-', // \uf068 \uf107
+        EXPAND_SYMBOL: '+',
+        COLLAPSE_SYMBOL: '-',
         selector: params.selector,
         root: params.data,
         width: params.chartWidth,
@@ -77,8 +77,6 @@ function drawOrganizationChart(params) {
         index: 0,
         nodePadding: 9,
         collapseCircleRadius: 9,
-        nodeHeight: 80,
-        nodeWidth: 270,
         duration: 600,
         rootNodeTopMargin: 20,
         minMaxZoomProportions: [0.0005, 200],
@@ -89,34 +87,101 @@ function drawOrganizationChart(params) {
         nodeStrokeWidth: '1px'
     }
 
-
-    var dynamic = {}
-    dynamic.nodeImageWidth = attrs.nodeHeight * 100 / 190;
-    dynamic.nodeImageHeight = attrs.nodeHeight - 2 * attrs.nodePadding;
-    dynamic.nodeTextLeftMargin = attrs.nodePadding * 2 + dynamic.nodeImageWidth
-    dynamic.rootNodeLeftMargin = attrs.width / 2;
-    dynamic.nodePositionNameTopMargin = attrs.nodePadding + 8 + dynamic.nodeImageHeight / 4 * 1;
-    dynamic.nodeChildCountTopMargin = attrs.nodePadding + 14 + dynamic.nodeImageHeight / 4 * 3;
-
+	// Attributes related to individual nodes
+    var nodeAttrs = {}
+	nodeAttrs.nodeWidth = 270;
+	nodeAttrs.nodeHeight = 80;
+	nodeAttrs.nodeImageWidth = nodeAttrs.nodeHeight * 100 / 190;
+    nodeAttrs.nodeImageHeight = nodeAttrs.nodeHeight - 2 * attrs.nodePadding;
+    nodeAttrs.nodeTextLeftMargin = attrs.nodePadding * 2 + nodeAttrs.nodeImageWidth
+    nodeAttrs.rootNodeLeftMargin = attrs.width / 2;
+    nodeAttrs.nodePositionNameTopMargin = attrs.nodePadding + 8 + nodeAttrs.nodeImageHeight / 4 * 1;
+	nodeAttrs.nodeChildCountTopMargin = attrs.nodePadding + 14 + nodeAttrs.nodeImageHeight / 4 * 3;
+	nodeAttrs.nodeStroke = 'teal';
+	nodeAttrs.nodeStrokeWidth = '1px';
+	nodeAttrs.selectedNodeBackground = '#ffeeff';
+	nodeAttrs.selectedNodeStrokeWidth = '2.5px';
+	nodeAttrs.filledNodeBackground = '#dedede';
+	nodeAttrs.unfilledNodeBackground = '#ffffff'
+	
     var selectedNode = null;
-    var draggingNode = null;
+	var draggingNode = null;
+	
     // panning variables
     var panSpeed = 200;
-    var panBoundary = 20;
-    var tree = d3.layout.tree().nodeSize([attrs.nodeWidth + 40, attrs.nodeHeight])
+	var panBoundary = 20;
+
+	var classifierData = {}
+
+	// Gnerate required data structures for other operations
+	function generateDataStructures(node, depth) {
+		node.depth = depth;
+		node.NET_PATIENT_REVENUE = parseFloat((Math.random() * 10).toFixed(2))
+		node.NET_INCOME = parseFloat((Math.random() * 10).toFixed(2))
+		node.NET_INCOME_MARGIN = parseFloat((Math.random() * 10).toFixed(2))
+
+		var category = ['High', 'Medium', 'Low'];
+		node.STRUCTURE_SEGMENT = category[(parseInt(node.NET_PATIENT_REVENUE) % 3)]
+		node.PATIENT_EXPERIENCE_SEGEMENT = category[(parseInt(node.NET_INCOME) % 3)]
+		node.QUALITY_SEGMENT = category[(parseInt(node.NET_INCOME_MARGIN) % 3)]
+		node.RESEARCH_SEGEMENT = category[(parseInt(node.NET_PATIENT_REVENUE) % 3)]
+		node.WILLINGNESS_TO_PATNER_SEGMENT = category[(parseInt(node.NET_INCOME) % 3)]
+		node.EXPRESSION_SEGMENT = category[(parseInt(node.NET_INCOME_MARGIN) % 3)]
+
+		if (!classifierData[node.ENTITY_ORG_TYPE]) {
+			classifierData[node.ENTITY_ORG_TYPE] = {};
+		}
+
+		if (classifierData[node.ENTITY_ORG_TYPE][depth]) {
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(node.NET_PATIENT_REVENUE);
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(node.NET_INCOME);
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(node.NET_INCOME_MARGIN);
+		}
+		else {
+			classifierData[node.ENTITY_ORG_TYPE][depth] = {};
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE = [];
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME = [];
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN = [];
+
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(node.NET_PATIENT_REVENUE);
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(node.NET_INCOME);
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(node.NET_INCOME_MARGIN);
+		}
+
+		if(node.hasOwnProperty('children')) {
+			for(var i=0; i<node.children.length; i+=1) {
+				generateDataStructures(node['children'][i], depth + 1);
+			}
+		}
+	}
+
+	// modify the generated data structures
+	function modifyDataStrucutres() {		
+		var keys = Object.keys(classifierData);
+		for (var i=0; i<keys.length; i+=1) {
+			var depthKeys =  Object.keys(classifierData[keys[i]]);
+
+			for(var j=0;j<depthKeys.length; j+=1) {
+				classifierData[keys[i]][depthKeys[j]].NET_PATIENT_REVENUE.sort();
+				classifierData[keys[i]][depthKeys[j]].NET_INCOME.sort();
+				classifierData[keys[i]][depthKeys[j]].NET_INCOME_MARGIN.sort();
+			}
+		}
+	}
+	
+	generateDataStructures(attrs.root, 0)
+	modifyDataStrucutres();
+
+    var tree = d3.layout.tree().nodeSize([nodeAttrs.nodeWidth + 40, nodeAttrs.nodeHeight])
                 .separation(function(a, b) {
         return a.parent == b.parent ? 1 : 1.15;
-    });;
-    
-    // var tree = d3.layout.tree()
-    //     .nodeSize([nodeWidth + horizontalSeparationBetweenNodes, nodeHeight + verticalSeparationBetweenNodes])
-        
+    });
 
-    function diagonal(s, t) {
-        const x = s.x+attrs.nodeWidth / 2;
-        const y = s.y+attrs.nodeHeight / 2;
-        const ex = t.x+attrs.nodeWidth / 2;
-        const ey = t.y+attrs.nodeHeight / 2;
+    function drawLink(s, t) {
+        const x = s.x + nodeAttrs.nodeWidth / 2;
+        const y = s.y + nodeAttrs.nodeHeight / 2;
+        const ex = t.x + nodeAttrs.nodeWidth / 2;
+        const ey = t.y + nodeAttrs.nodeHeight / 2;
 
         let xrvs = ex - x < 0 ? -1 : 1;
         let yrvs = ey - y < 0 ? -1 : 1;
@@ -131,18 +196,13 @@ function drawOrganizationChart(params) {
         //w=0;
         const path = `
             M ${x} ${y}
-            L ${x} ${y+h*yrvs}
-            C  ${x} ${y+h*yrvs+r*yrvs} ${x} ${y+h*yrvs+r*yrvs} ${x+r*xrvs} ${y+h*yrvs+r*yrvs}
-            L ${x+w*xrvs+r*xrvs} ${y+h*yrvs+r*yrvs}
-            C  ${ex}  ${y+h*yrvs+r*yrvs} ${ex}  ${y+h*yrvs+r*yrvs} ${ex} ${ey-h*yrvs}
+            L ${x} ${y + h * yrvs}
+            C  ${x} ${y + (h + r) * yrvs} ${x} ${y + (h + r) * yrvs} ${x + r * xrvs} ${y + (h + r) * yrvs}
+            L ${x + (w + r) * xrvs} ${y + (h + r) * yrvs}
+            C  ${ex}  ${y + (h + r) * yrvs} ${ex}  ${y + (h + r) * yrvs} ${ex} ${ey - h * yrvs}
             L ${ex} ${ey}`
         return path;
     }
-
-    // var diagonal = d3.svg.diagonal()
-    //     .projection(function (d) {
-    //         return [d.x + attrs.nodeWidth / 2, d.y + attrs.nodeHeight / 2];
-    //     });
 
     var zoomBehaviours = d3.behavior
         .zoom()
@@ -179,10 +239,10 @@ function drawOrganizationChart(params) {
         .attr("transform", "translate(" + attrs.width / 2 + "," + 20 + ")");
         // filters go in defs element
    
-    zoomBehaviours.translate([dynamic.rootNodeLeftMargin, attrs.rootNodeTopMargin]);
+    zoomBehaviours.translate([nodeAttrs.rootNodeLeftMargin, attrs.rootNodeTopMargin]);
 
     attrs.root.x0 = 0;
-    attrs.root.y0 = dynamic.rootNodeLeftMargin;
+    attrs.root.y0 = nodeAttrs.rootNodeLeftMargin;
     if (params.mode != 'department') {
         
         // adding unique values to each node recursively		
@@ -190,9 +250,11 @@ function drawOrganizationChart(params) {
         addPropertyRecursive('uniqueIdentifier', function (v) {
             return uniq++;
         }, attrs.root);
-    }
+	}
+
     attrs.root = JSON.parse(JSON.stringify(attrs.root).replace(/"children":/g, '"kids":'));
-    function addPageno(d) {
+	
+	function addPageno(d) {
         if (d && d.kids) {
             d.page = 1;
             d.children = [];
@@ -210,20 +272,14 @@ function drawOrganizationChart(params) {
     }
     addPageno(attrs.root) 
     
-
-    // console.log("********************************");
-    // console.log(attrs.root);
     expand(attrs.root);
     
     if (attrs.root.children) {
         attrs.root.children.forEach(collapse);
     }
-      
-    // console.log("********************************");
-    // console.log(attrs.root);
 
-
-    update(attrs.root);
+	update(attrs.root);
+	
     d3.select(attrs.selector).style("height", attrs.height);
 
     var tooltip = d3.select('body')
@@ -291,28 +347,61 @@ function drawOrganizationChart(params) {
                 "ENTITY_SREP_ACCESS": "N",
                 "children": null
             };
-            // // console.log('Create Node name: ' + name);
             create_node_parent.children.push(new_node);
             create_node_modal_active = false;
             $('#CreateNodeName').val('');
 
         }
-        // close_modal();
         update(create_node_parent);
     }
 
     function rename_node() {
         if (node_to_rename && rename_node_modal_active) {
             name = $('#RenameNodeName').val();
-            // console.log('New Node name: ' + name);
             node_to_rename.ENTITY_NAME = name;
             rename_node_modal_active = false;
 
         }
-        // close_modal();
         update(attrs.root);
-        
-    }
+	}
+	
+	function getColorCategory(node) {
+		var parameter = '';
+
+		switch (parseInt(params.colorBy)) {
+			case 1: parameter = 'NET_PATIENT_REVENUE'; break;
+			case 2: parameter = 'NET_INCOME'; break;
+			case 3: parameter = 'NET_INCOME_MARGIN'; break;
+			case 4: parameter = 'STRUCTURE_SEGMENT'; break;
+			case 5: parameter = 'PATIENT_EXPERIENCE_SEGEMENT'; break;
+			case 6: parameter = 'QUALITY_SEGMENT'; break;
+			case 7: parameter = 'RESEARCH_SEGEMENT'; break;
+			case 8: parameter = 'WILLINGNESS_TO_PATNER_SEGMENT'; break;
+			case 9: parameter = 'EXPRESSION_SEGMENT'; break;
+		}
+
+		if (!node[parameter]) return nodeAttrs.unfilledNodeBackground;
+
+		if(typeof node[parameter] == 'string') {
+			return colorCategory[node[parameter].toLowerCase()]
+		}
+		else {
+			var valueArray = classifierData[node.ENTITY_ORG_TYPE][node.depth][parameter];
+			var size = valueArray.length;
+			
+			if (size == 1) { return colorCategory.high }
+			else if(size == 2) {
+				if (node[parameter] == valueArray[0]) { return colorCategory.low; }
+				else { return colorCategory.high; }
+			}
+			else {
+				if (node[parameter] <= valueArray[Math.round(size / 3)]) { return colorCategory.low; }
+				else if (node[parameter] <= valueArray[Math.round((size * 2) / 3)]) { return colorCategory.medium; }
+				else { return colorCategory.high; }
+			}
+		}
+	}
+
 
     outer_update = null
     function update(source, param, locate=false) {
@@ -321,7 +410,6 @@ function drawOrganizationChart(params) {
             {
                 title: 'Rename node',
                 action: function (elm, d, i) {
-                    // console.log('Rename node');
                     $("#RenameNodeName").val(d.name);
                     rename_node_modal_active = true;
                     node_to_rename = d
@@ -331,27 +419,24 @@ function drawOrganizationChart(params) {
             {
                 title: 'Delete node',
                 action: function (elm, d, i) {
-                    // console.log('Delete node');
                     delete_node(d);
                 }
             },
             {
                 title: 'Create child node',
                 action: function (elm, d, i) {
-                    // console.log('Create child node');
                     create_node_parent = d;
                     create_node_modal_active = true;
                     $('#CreateNodeModal').modal('show');
-                    // $('#CreateNodeName').focus();
                 }
             }
-        ]
+		]
+		
         function delete_node(node) {
             visit(source, function (d) {
                 if (d.children) {
                     for (var child of d.children) {
                         if (child == node) {
-                            // d.children = _.without(d.children, child);
                             d.children = d.children.filter(value => value != 0 && value != child)
                             update(attrs.root);
                             break;
@@ -359,16 +444,16 @@ function drawOrganizationChart(params) {
                     }
                 }
             },
-                function (d) {
-                    return d.children && d.children.length > 0 ? d.children : null;
-                });
-        }
+            function (d) {
+                return d.children && d.children.length > 0 ? d.children : null;
+            });
+		}
+		
         const getCircularReplacer = (deletePorperties) => { //func that allows a circular json to be stringified
             const seen = new WeakSet();
             return (key, value) => {
                 if (typeof value === "object" && value !== null) {
                     if (deletePorperties) {
-                        // delete value.id; //delete all properties you don't want in your json (not very convenient but a good temporary solution)
                         delete value.x0;
                         delete value.y0;
                         delete value.y;
@@ -390,9 +475,6 @@ function drawOrganizationChart(params) {
         
         circularRemovedNode = JSON.stringify(myvar, getCircularReplacer(true)); //Stringify a second time to delete the properties you don't need
 
-        // // console.log(circularRemovedNode); //You have your json in myvar
-
-
         function pan(domNode, direction) {
             var speed = panSpeed;
             if (panTimer) {
@@ -401,14 +483,16 @@ function drawOrganizationChart(params) {
                 if (direction == 'left' || direction == 'right') {
                     translateX = direction == 'left' ? translateCoords.translate[0] + speed : translateCoords.translate[0] - speed;
                     translateY = translateCoords.translate[1];
-                } else if (direction == 'up' || direction == 'down') {
+				} 
+				else if (direction == 'up' || direction == 'down') {
                     translateX = translateCoords.translate[0];
                     translateY = direction == 'up' ? translateCoords.translate[1] + speed : translateCoords.translate[1] - speed;
                 }
                 scaleX = translateCoords.scale[0];
                 scaleY = translateCoords.scale[1];
                 scale = zoomListener.scale();
-                svg.transition().attr("transform", "translate(" + translateX + "," + translateY + ")scale(" + scale + ")");
+				
+				svg.transition().attr("transform", "translate(" + translateX + "," + translateY + ")scale(" + scale + ")");
                 d3.select(domNode).select('g.node').attr("transform", "translate(" + translateX + "," + translateY + ")");
                 zoomListener.scale(zoomListener.scale());
                 zoomListener.translate([translateX, translateY]);
@@ -440,12 +524,14 @@ function drawOrganizationChart(params) {
                 nodesExit = svg.selectAll("g.node")
                     .data(nodes, function (d) {
                         return d.id;
-                    }).filter(function (d, i) {
+					})
+					.filter(function (d, i) {
                         if (d.id == draggingNode.id) {
                             return false;
                         }
                         return true;
-                    }).remove();
+					})
+					.remove();
             }
 
             // remove parent link
@@ -467,9 +553,6 @@ function drawOrganizationChart(params) {
                 dragStarted = true;
                 nodes = tree.nodes(d);
                 d3.event.sourceEvent.stopPropagation()
-                // // console.log("drag started")
-                // // console.log("event to strat drag",d3.event)
-
             })
             .on("drag", function (d) {
                 // this is hardcoded for now
@@ -513,9 +596,6 @@ function drawOrganizationChart(params) {
                 var node = d3.select(this);
                 
                 node.attr("transform", "translate(" + d.x0 + "," + d.y0 + ")")
-                // // console.log("ELEMENT POS",d.x0,d3.event.dy,d.y0,d3.event.dx)
-                // // console.log("dragging")
-                // // console.log("event to  draggging",d3.event)
             })
             .on("dragend", function (d) {
                 if (d == attrs.root) {
@@ -539,15 +619,11 @@ function drawOrganizationChart(params) {
                         selectedNode.children.push(draggingNode);
                     }
                     // Make sure that the node being added to is expanded so user can see added node is correctly moved
-                    // expand(selectedNode);
-                    // sortTree();
-                    // console.log("dragged", selectedNode, "into", draggingNode)
                     endDrag();
-
-                } else {
+				} 
+				else {
                     endDrag();
                 }
-                // // console.log("drag-ended")
             });
         function endDrag() {
             selectedNode = null;
@@ -558,7 +634,6 @@ function drawOrganizationChart(params) {
             updateTempConnector();
             if (draggingNode !== null) {
                 update(attrs.root);
-                // centerNode(draggingNode);
                 draggingNode = null;
             }
         }
@@ -570,7 +645,7 @@ function drawOrganizationChart(params) {
 
         // Normalize for fixed-depth.
         nodes.forEach(function (d) {
-            d.y = d.depth * attrs.linkLineSize;
+			d.y = d.depth * attrs.linkLineSize;
         });
 
         // Update the nodes…
@@ -579,9 +654,6 @@ function drawOrganizationChart(params) {
                 return d.id || (d.id = ++attrs.index);
             })
 
-        // Enter any new nodes at the parent's previous position.
-        
-        // #entrance 
         var nodeEnter = node.enter()
             .append("g")
             .attr("class", "node")
@@ -593,17 +665,12 @@ function drawOrganizationChart(params) {
                 return "translate(" + source.x0 + "," + source.y0 + ")";
             })
 
-
-
-
         var nodeGroup = nodeEnter.append("g")
-            .attr("class", "node-group")
-            
-
+            .attr("class", "node-group")            
 
         nodeGroup.append("rect")
-            .attr("width", attrs.nodeWidth)
-            .attr("height", attrs.nodeHeight)
+            .attr("width", nodeAttrs.nodeWidth)
+            .attr("height", nodeAttrs.nodeHeight)
             .attr("id", function(d) {
             	return ('N' + d.uniqueIdentifier);
             })
@@ -612,14 +679,19 @@ function drawOrganizationChart(params) {
             })
             .attr('rx', '.5rem')
             .attr("fill", function (d) {
-                var cl = ""
-                if (d.ENTITY_NAME.startsWith("(Filled)")) {
-                    cl = "#c5c5c5"
-                }
-                else {
-                    cl = "#fff"
-                }
-                return cl
+				var cl = ""
+				console.log('params.colorBy = ' + params.colorBy);
+				if (params.colorBy < 1) {
+					if (d.ENTITY_NAME.startsWith("(Filled)")) {
+						return nodeAttrs.filledNodeBackground
+					}
+					else {
+						return nodeAttrs.unfilledNodeBackground
+					}
+				}
+				else {
+					return getColorCategory(d);
+				}
             })
             .attr("class", function (d) {
                 var res = "";
@@ -642,62 +714,12 @@ function drawOrganizationChart(params) {
 			});
 			
 			console.log(source)
-			
-		if (true) {
-			/*var collapsiblesWrapper = nodeEnter.append('g')
-				.attr('class', 'collapsible-circle')
-				.attr('data-id', function (v) {
-					return v.uniqueIdentifier;
-				});
-
-			// collapsiblesWrapper.append("rect")
-			//     .attr('class', 'node-collapse-right-rect')
-			//     .attr('height', attrs.collapseCircleRadius)
-			//     .attr('fill', 'black')
-			//     .attr('x', attrs.nodeWidth/2 )
-			//     .attr('y', attrs.nodeHeight - 7)
-			//     .attr("width", function (d) {
-			//         if (d.children || d._children) return attrs.collapseCircleRadius;
-			//         return 0;
-			//     })
-
-			var collapsibles =
-				collapsiblesWrapper.append("circle")
-					.attr('class', 'node-collapse')
-					.attr('cx', attrs.nodeWidth/2)
-					.attr('cy', attrs.nodeHeight )
-					.attr("", setCollapsibleSymbolProperty);
-
-			//hide collapse rect when node does not have children
-			collapsibles.attr("r", function (d) {
-				if (d.children || d._children) return attrs.collapseCircleRadius;
-				return 0;
-			})
-				.attr("height", attrs.collapseCircleRadius)
-
-			collapsiblesWrapper.append("text")
-				.attr('class', 'text-collapse')
-				.attr("x", attrs.nodeWidth/2 )
-				.attr('y', attrs.nodeHeight +4.5)
-				.attr('width', attrs.collapseCircleRadius)
-				.attr('height', attrs.collapseCircleRadius)
-				.style('font-size', attrs.collapsibleFontSize)
-				.attr("text-anchor", "middle")
-				.style('font-family', 'Fira Code')
-				.style('font-weight', '500')
-				.text(function (d) {
-					return d.collapseText;
-				})
-
-			collapsiblesWrapper.on("click", click);
-			// // console.log("collaps wrapper", collapsiblesWrapper);*/
-		}
 
         nodeGroup.append("text")
         	.attr('id', function(d) {
             	return ('N' + d.uniqueIdentifier +"name");
             })
-            .attr("x", dynamic.nodeTextLeftMargin)
+            .attr("x", nodeAttrs.nodeTextLeftMargin)
             .attr("y", attrs.nodePadding + 10)
             .attr('class', 'entity-name')
             .attr("text-anchor", "left")
@@ -707,8 +729,8 @@ function drawOrganizationChart(params) {
             .call(wrap, 200);
 
         nodeGroup.append("text")
-            .attr("x", dynamic.nodeTextLeftMargin)
-            .attr("y", dynamic.nodePositionNameTopMargin + 20)
+            .attr("x", nodeAttrs.nodeTextLeftMargin)
+            .attr("y", nodeAttrs.nodePositionNameTopMargin + 20)
             .attr('class', 'emp-position-name')
             .attr("dy", ".35em")
             .attr("text-anchor", "left")
@@ -717,7 +739,6 @@ function drawOrganizationChart(params) {
                 if (position.length < d.ENTITY_ORG_TYPE.length) {
                     position = position.substring(0, 24) + '...'
 				}
-				console.log(position)
 
 				if (OrgTypeLevel[position] < selectedEntityLevel) {
 					var collapsiblesWrapper = nodeEnter.append('g')
@@ -726,22 +747,11 @@ function drawOrganizationChart(params) {
 						return v.uniqueIdentifier;
 					});
 	
-				// collapsiblesWrapper.append("rect")
-				//     .attr('class', 'node-collapse-right-rect')
-				//     .attr('height', attrs.collapseCircleRadius)
-				//     .attr('fill', 'black')
-				//     .attr('x', attrs.nodeWidth/2 )
-				//     .attr('y', attrs.nodeHeight - 7)
-				//     .attr("width", function (d) {
-				//         if (d.children || d._children) return attrs.collapseCircleRadius;
-				//         return 0;
-				//     })
-	
 				var collapsibles =
 					collapsiblesWrapper.append("circle")
 						.attr('class', 'node-collapse')
-						.attr('cx', attrs.nodeWidth/2)
-						.attr('cy', attrs.nodeHeight )
+						.attr('cx', nodeAttrs.nodeWidth/2)
+						.attr('cy', nodeAttrs.nodeHeight )
 						.attr("", setCollapsibleSymbolProperty);
 	
 				//hide collapse rect when node does not have children
@@ -749,12 +759,12 @@ function drawOrganizationChart(params) {
 					if (d.children || d._children) return attrs.collapseCircleRadius;
 					return 0;
 				})
-					.attr("height", attrs.collapseCircleRadius)
+				.attr("height", attrs.collapseCircleRadius)
 	
 				collapsiblesWrapper.append("text")
 					.attr('class', 'text-collapse')
-					.attr("x", attrs.nodeWidth/2 )
-					.attr('y', attrs.nodeHeight +4.5)
+					.attr("x", nodeAttrs.nodeWidth/2 )
+					.attr('y', nodeAttrs.nodeHeight +4.5)
 					.attr('width', attrs.collapseCircleRadius)
 					.attr('height', attrs.collapseCircleRadius)
 					.style('font-size', attrs.collapsibleFontSize)
@@ -766,25 +776,14 @@ function drawOrganizationChart(params) {
 					})
 	
 				collapsiblesWrapper.on("click", click);
-				}
+			}
 
-                return position;
-            })
-
-        // nodeGroup.append("text")
-        //     .attr("x", dynamic.nodeTextLeftMargin)
-        //     .attr("y", attrs.nodePadding + 10 + dynamic.nodeImageHeight / 4 * 2)
-        //     .attr('class', 'emp-area')
-        //     .attr("dy", ".35em")
-        //     .attr("text-anchor", "left")
-
-        // .text(function(d) {
-        //     return d.area;
-        // })
-
+            return position;
+		})
+			
         nodeGroup.append("text")
-            .attr("x", dynamic.nodeTextLeftMargin)
-            .attr("y", dynamic.nodeChildCountTopMargin)
+            .attr("x", nodeAttrs.nodeTextLeftMargin)
+            .attr("y", nodeAttrs.nodeChildCountTopMargin)
             .attr('class', 'emp-count-icon')
             .attr("text-anchor", "left")
             .style('font-family', 'FontAwesome')
@@ -793,8 +792,8 @@ function drawOrganizationChart(params) {
             });
 
         nodeGroup.append("text")
-            .attr("x", dynamic.nodeTextLeftMargin + 13)
-            .attr("y", dynamic.nodeChildCountTopMargin)
+            .attr("x", nodeAttrs.nodeTextLeftMargin + 13)
+            .attr("y", nodeAttrs.nodeChildCountTopMargin)
             .attr('class', 'emp-count')
             .attr("text-anchor", "left")
 
@@ -810,16 +809,16 @@ function drawOrganizationChart(params) {
             .attr("rx", 3)
             .attr('x', attrs.nodePadding)
             .attr('y', 2 + attrs.nodePadding)
-            .attr('width', dynamic.nodeImageWidth)
+            .attr('width', nodeAttrs.nodeImageWidth)
             .attr('fill', 'none')
-            .attr('height', dynamic.nodeImageHeight - 4)
+            .attr('height', nodeAttrs.nodeImageHeight - 4)
 
         nodeGroup.append("svg:image")
             .attr('y', 2 + attrs.nodePadding)
             .attr('x', attrs.nodePadding)
             .attr('preserveAspectRatio', "")
-            .attr('width', dynamic.nodeImageWidth)
-            .attr('height', dynamic.nodeImageHeight - 4)
+            .attr('width', nodeAttrs.nodeImageWidth)
+            .attr('height', nodeAttrs.nodeImageHeight - 4)
             .attr('clip-path', "url(#clip)")
             .attr("xlink:href", function (v) {
                 
@@ -827,19 +826,18 @@ function drawOrganizationChart(params) {
             })
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
-            .duration(attrs.duration) //3000
+            .duration(attrs.duration)
             .attr("transform", function (d) {
                 return "translate(" + d.x + "," + d.y + ")";
             })
 
         //todo replace with attrs object
         nodeUpdate.select("rect")
-            .attr("width", attrs.nodeWidth)
-            .attr("height", attrs.nodeHeight)
+            .attr("width", nodeAttrs.nodeWidth)
+            .attr("height", nodeAttrs.nodeHeight)
             .attr('rx', 3)
             .attr("stroke", function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
-                    // print("param is here",param)
                 }
                 else {
                 	return attrs.nodeStroke;
@@ -852,21 +850,15 @@ function drawOrganizationChart(params) {
                 return attrs.nodeStrokeWidth
             })
 
-        // d3.select()
-        // Transition exiting nodes to the parent's new position.
-        // #exit
-        // console.log("WIll exit",param)
-            var nodeExit = node.exit()
+        var nodeExit = node.exit()
             .attr('opacity', 1)
             .transition()
-            .duration(attrs.duration) //3000
+            .duration(attrs.duration)
             .attr("transform", function (d) {
                 if(param && param.parent_page){
                     return ("translate("+param.parent_page[0]+","+ param.parent_page[1]+")")
                 }
-                return ("translate("+source.x+","+ source.y+")")
-                
-                // return "translate(" + d.x-100 + "," + d.y + ")";
+                return ('translate(' + source.x + ',' + source.y + ')')                
             })
             .each('end', function() {
                 d3.select(this).remove();
@@ -874,8 +866,8 @@ function drawOrganizationChart(params) {
             .attr('opacity', 0);
   
         nodeExit.select("rect")
-            .attr("width", attrs.nodeWidth)
-            .attr("height", attrs.nodeHeight)
+            .attr("width", nodeAttrs.nodeWidth)
+            .attr("height", nodeAttrs.nodeHeight)
 
         // Update the links…
         var link = svg.selectAll("path.link")
@@ -888,47 +880,33 @@ function drawOrganizationChart(params) {
         // Enter any new links at the parent's previous position.
         link.enter().insert("path", "g")
             .attr("class", "link")
-            .attr("x", attrs.nodeWidth / 2)
-            .attr("y", attrs.nodeHeight / 2)
-            // .attr("stroke", function(d) {
-            //     return color_rgb[Math.floor(Math.random() * color_rgb.length)]
-            // })
-            .attr("stroke", function (d) {
-                
-                // // console.log(RelationSubtypeColors[d.target.REL_TYPE])
-                // return "#cfcfcf"
+            .attr("x", nodeAttrs.nodeWidth / 2)
+            .attr("y", nodeAttrs.nodeHeight / 2)
+            .attr("stroke", function (d) {                
                 return RelationSubtypeColors[d.target.REL_TYPE]
             })
-            // .style("stroke-dasharray", ("3, 3")) 
             .attr("stroke-width", function (d) {
-                // if (d.target.ENTITY_ORG_TYPE == "OSUB") {
-                    
-                //     return "4px"
-                // }
-                // else {
-                    return "2px";
-                // }
+                return "2px";
             })
-
             .attr("d", function (d) {
                 if(param && param.parent_page){
                     var o = {
                         x: param.parent_page[0],
                         y: param.parent_page[1]
                     };
-                    return diagonal(o,o)
+                    return drawLink(o,o)
                 }
                 var o = {
                     x: source.x,
                     y: source.y
                 };
-                return diagonal(o,o);
+                return drawLink(o,o);
             });
 
         // Transition links to their new position.
         link.transition()
             .duration(attrs.duration)
-            .attr("d", d => diagonal(d.source,d.target));
+            .attr("d", d => drawLink(d.source,d.target));
 
         // Transition exiting nodes to the parent's new position.
         link.exit().transition()
@@ -939,13 +917,13 @@ function drawOrganizationChart(params) {
                         x: param.parent_page[0],
                         y: param.parent_page[1]
                     };
-                    return diagonal(o,o)
+                    return drawLink(o,o)
                 }
                 var o = {
                     x: source.x,
                     y: source.y
                 };
-                return diagonal(o,o);
+                return drawLink(o,o);
             })
             .remove();
 
@@ -963,148 +941,99 @@ function drawOrganizationChart(params) {
         svg.selectAll(".page-text").remove();
         parents.forEach(function(p) {
             if (p._children)
-              return;
-            // var p1 = p.children[p.children.length - 1];
-            // var p2 = p.children[0];
+              	return;
             var currPar = Object.assign({}, p);//helper for left right navigation position
 
             var pagingData = [];
             var pageTextData = [];
 
             if (p.page > 1) {
-              pagingData.push({
-                type: "prev",
-                parent: p,
-                no: (p.page - 1)
-              });
+              	pagingData.push({
+                	type: "prev",
+                	parent: p,
+                	no: (p.page - 1)
+              	});
             }
             if (p.page < Math.ceil(p.kids.length / PAGINATION)) {
-              pagingData.push({
-                type: "next",
-                parent: p,
-                no: (p.page + 1)
-              });
+              	pagingData.push({
+                	type: "next",
+                	parent: p,
+                	no: (p.page + 1)
+              	});
             }
             if (p.children && p.kids) {
                 pageTextData.push({
-                currPage: p.page,
-                TotalPage: Math.ceil(p.kids.length / PAGINATION)
-              });
+                	currPage: p.page,
+                	TotalPage: Math.ceil(p.kids.length / PAGINATION)
+              	});
             }
             
             var pageControl = svg.selectAll(".page")
-              .data(pagingData, function(d) {
-                return (d.parent.id + d.type);
-              }).enter()
-              .append("g")
-              .attr("class", "page")
-              .attr("transform", function(d) {
-                var x = (d.type == "next") ? currPar.x + 260 : currPar.x + 10;
-                var y = (d.type == "prev") ? currPar.y+ 80 + 17 : currPar.y+ 80 + 17;
-                // if (d.type = "next")
-                // {
-                //     var y = currPar.y+ 80 + 20;
-                //     var x = currPar.x+ 180 ;
-                // }  
-                // else{
-                //     var y = currPar.y+ 80 + 20;
-                //     var x = currPar.x+ 140 ;
-                // }
-                // // console.log(currPar);
-                // debugger;
-                return "translate(" + x + "," + y + ")";
-              }).on("click", paginate);
+              	.data(pagingData, function(d) {
+                	return (d.parent.id + d.type);
+              	}).enter()
+              	.append("g")
+              	.attr("class", "page")
+              	.attr("transform", function(d) {
+                	var x = (d.type == "next") ? currPar.x + 260 : currPar.x + 10;
+                	var y = (d.type == "prev") ? currPar.y+ 80 + 17 : currPar.y+ 80 + 17;
+                	return "translate(" + x + "," + y + ")";
+				})
+				.on("click", paginate);
           
             pageControl
-              .append("circle")
-              .attr("r", 13)
-            //   .attr("width",)
-            //   .attr("height",)
-              .style("fill", "#eeeeee");
+              	.append("circle")
+              	.attr("r", 13)
+              	.style("fill", "#eeeeee");
             pageControl
-              .append("image")
-              .attr("xlink:href", function(d) {
-                if (d.type == "next") {
-                  return "next_2.svg"
-                } else {
-                  return "prev_2.svg"
-                }
-              })
-              .attr("x", -7)
-              .attr("y", -7)
-              .attr("width", 15)
-              .attr("height", 15);
-              // ######################
-            var pageTextControl = svg.selectAll(".page-text")
-            .data(pageTextData)
-            .enter()
-            .append("g")
-            .attr("class", "page-text")
-            .attr("transform", function(d) {
-            var x = currPar.x+ 180 
-            var y = currPar.y+ 100 
-            return "translate(" + x + "," + y + ")";
-            })
-            pageTextControl.append("text")
-            .text(function (d) {
-            return "Page "+d.currPage +" / "+d.TotalPage
-        })
-          });
+              	.append("image")
+              	.attr("xlink:href", function(d) {
+                	if (d.type == "next") { return "next_2.svg" } 
+					else { return "prev_2.svg" }
+              	})
+              	.attr("x", -7)
+              	.attr("y", -7)
+              	.attr("width", 15)
+              	.attr("height", 15);
+
+			var pageTextControl = svg.selectAll(".page-text")
+            	.data(pageTextData)
+            	.enter()
+            	.append("g")
+            	.attr("class", "page-text")
+           		.attr("transform", function(d) {
+					var x = currPar.x+ 180 
+    		        var y = currPar.y+ 100 
+	        	    return "translate(" + x + "," + y + ")";
+            	})
+			
+			pageTextControl.append("text")
+            	.text(function (d) {
+            		return "Page "+d.currPage +" / "+d.TotalPage
+        		})
+        });
           
-          function paginate(d,) {
-            // console.log(d, "paginate_data")
+        function paginate(d,) {
             d.parent.page = d.no;
             
             setPage(d.parent);
-            // update(attrs.root, );
             update(attrs.root,{
                 parent_page: [d.parent.x0,d.parent.y0]
             });
-            // console.log("after paginate",attrs.root)
-          }
-          function setPage(d) {
+        }
+		
+		function setPage(d) {
             if (d && d.kids) {
-              d.children = [];
-              d.kids.forEach(function(d1, i) {
-                if (d.page === d1.pageNo) {
-                    
-                    collapse(d1)
-                    
-                  d.children.push(d1);
-                }
-              })
+              	d.children = [];
+              	d.kids.forEach(function(d1, i) {
+					if (d.page === d1.pageNo) {
+						collapse(d1)
+						
+						d.children.push(d1);
+					}
+              	})
             }
-          }
-
-        // if (param && param.locate) {
-            
-        //     // console.log("located");
-        //     debugger;
-        //     var x;
-        //     var y;
-
-        //     // #search in nodes i.e. open nodes.
-        //     // #if not found look recursively 
-        //     debugger;
-
-
-
-        //     nodes.forEach(function (d) {
-        //         if (d.uniqueIdentifier == param.locate) {
-        //             x = d.x;
-        //             y = d.y;
-        //         }
-        //     });
-
-        //     // normalize for width/height
-        //     var new_x = (-x + (window.innerWidth / 2));
-        //     var new_y = (-y + (window.innerHeight / 2));
-
-        //     // move the main container g
-        //     svg.attr("transform", "translate(" + new_x + "," + new_y + ")")
-        //     zoomBehaviours.translate([new_x, new_y]);
-        //     zoomBehaviours.scale(1);
-        // }
+        }
 
         if (param && param.centerMySelf) {
             var x;
@@ -1115,12 +1044,11 @@ function drawOrganizationChart(params) {
                     x = d.x;
                     y = d.y;
                 }
-
             });
 
             // normalize for width/height
-            var new_x = (-x + (window.innerWidth / 2));
-            var new_y = (-y + (window.innerHeight / 2));
+            var new_x = ((window.innerWidth / 2) - x);
+            var new_y = ((window.innerHeight / 2) - y);
 
             // move the main container g
             svg.attr("transform", "translate(" + new_x + "," + new_y + ")")
@@ -1128,78 +1056,66 @@ function drawOrganizationChart(params) {
             zoomBehaviours.scale(1);
         }
 
-        /*################  TOOLTIP  #############################*/
-
-        function getTagsFromCommaSeparatedStrings(tags) {
-            return tags.split(',').map(function (v) {
-                return '<li><div class="tag">' + v + '</div></li>  '
-            }).join('');
-        }
-
+		// Returns html script for the details sidebar
         function sideBarContent(item) {
-            var addvar = item.ENTITY_ADDR1 + ", " + item.ENTITY_STATE + ", " + item.ENTITY_CITY + ", " + item.ENTITY_ZIP;
+            var addvar = item.ENTITY_ADDR1 + ', ' + item.ENTITY_STATE + ', ' + item.ENTITY_CITY + ', ' + item.ENTITY_ZIP;
 
-            var strVar = "";
+            var strVar = '';
             strVar += '<div class="ui card sidebarcard">'
-            strVar += '<div class="content">'
-            strVar += '<img class="left floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
-            strVar += '<div class="header" style="font-size: 18px;">' + toTitleCase(item.ENTITY_NAME) + '</div>'
-            strVar += '<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
-            strVar += '<div><address> <a style="font-size: 12px;" target="_blank" href="' + 'https://maps.google.com/?q=' + addvar + '">' + addvar + ' </a> </address></div>'
-            strVar += '<div class="ui divider"></div><div class="description">'
-            strVar += '<div>Net Patient Revenue </span> <span class= "right-float"><b>$ 3.5B</b></span> </div><br>'
-            strVar += '<div>Net Income: </span> <span class= "right-float"><b>$ 2.3B</b></span> </div><br>'
-            strVar += '<div>Net Income Margin: </span> <span class= "right-float"><b>$ 1.9B</b></span> </div>'
-            strVar += '<div class="ui divider"></div>'
-            strVar += '<div>No of Employed Physicians  </span> <span class= "right-float"><b>342</b></span> </div><br>'
-            strVar += '<div>No of Affiliated OSUBs </span> <span class= "right-float"><b>' + item.NO_OF_OSUBS + '</b></span> </div><br>'
-            strVar += '<div>No of Affiliated Hospitals </span> <span class= "right-float"><b>' + item.NO_OF_HOSPS + '</b></span> </div><br>'
-            strVar += '<div>No of Affiliated SOCs </span> <span class= "right-float"><b>' + item.NO_OF_SOCS + '</b></span> </div>'
-            strVar += '<div class="ui divider"></div>'
-            strVar += '<div>Structure Segment: </span> <span class= "right-float"><b>Low</b></span> </div><br>'
-            strVar += '<div>Patient Experience Segment: </span> <span class= "right-float"><b>Medium</b></span> </div><br>'
-            strVar += '<div>Quality Segment: </span> <span class= "right-float"><b>Medium</b></span> </div><br>'
-            strVar += '<div>Research Segment: </span> <span class= "right-float"><b>High</b></span> </div><br>'
-            strVar += '<div>Willingness to Partner Segment: </span> <span class= "right-float"><b>Medium</b></span> </div><br>'
-            strVar += '<div>Structure Segment: </span> <span class= "right-float"><b>High</b></span> </div><br>'
-            strVar += '<div>Expression Segment: </span> <span class= "right-float"><b>High</b></span> </div>'
-            strVar += '</div>'
+            strVar += '		<div class="content">'
+            strVar += '			<img class="left floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
+            strVar += '			<div class="header" style="font-size: 18px;">' + toTitleCase(item.ENTITY_NAME) + '</div>'
+            strVar += '			<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
+            strVar += '			<div><address> <a style="font-size: 12px;" target="_blank" href="' + 'https://maps.google.com/?q=' + addvar + '">' + addvar + ' </a> </address></div>'
+            strVar += '			<div class="ui divider"></div><div class="description">'
+            strVar += '				<div>Net Patient Revenue </span> <span class= "right-float"><b>$ ' + item.NET_PATIENT_REVENUE + 'B</b></span> </div><br>'
+            strVar += '				<div>Net Income: </span> <span class= "right-float"><b>$ ' + item.NET_INCOME + 'B</b></span> </div><br>'
+            strVar += '				<div>Net Income Margin: </span> <span class= "right-float"><b>$ ' + item.NET_INCOME_MARGIN + 'B</b></span> </div>'
+            strVar += '				<div class="ui divider"></div>'
+            strVar += '				<div>No of Employed Physicians  </span> <span class= "right-float"><b>342</b></span> </div><br>'
+            strVar += '				<div>No of Affiliated OSUBs </span> <span class= "right-float"><b>' + item.NO_OF_OSUBS + '</b></span> </div><br>'
+            strVar += '				<div>No of Affiliated Hospitals </span> <span class= "right-float"><b>' + item.NO_OF_HOSPS + '</b></span> </div><br>'
+            strVar += '				<div>No of Affiliated SOCs </span> <span class= "right-float"><b>' + item.NO_OF_SOCS + '</b></span> </div>'
+            strVar += '				<div class="ui divider"></div>'
+            strVar += '				<div>Structure Segment: </span> <span class= "right-float"><b>' + item.STRUCTURE_SEGMENT + '</b></span> </div><br>'
+            strVar += '				<div>Patient Experience Segment: </span> <span class= "right-float"><b>' + item.PATIENT_EXPERIENCE_SEGEMENT + '</b></span> </div><br>'
+            strVar += '				<div>Quality Segment: </span> <span class= "right-float"><b>' + item.QUALITY_SEGMENT + '</b></span> </div><br>'
+            strVar += '				<div>Research Segment: </span> <span class= "right-float"><b>' + item.RESEARCH_SEGEMENT + '</b></span> </div><br>'
+            strVar += '				<div>Willingness to Partner Segment: </span> <span class= "' + item.WILLINGNESS_TO_PATNER_SEGMENT + '-float"><b>Medium</b></span> </div><br>'
+            strVar += '				<div>Expression Segment: </span> <span class= "right-float"><b>' + item.EXPRESSION_SEGMENT + '</b></span> </div>'
+            strVar += '		</div>'
             strVar += '</div>'
 
             return strVar
-        }
+		}
+		
+		// Returns HTML script for tooltip
         function tooltipContent(item) {
-
-            var strVar = "";
-            // // console.log(item)
+            var strVar = '';
             strVar += '<div class="ui card">'
-            strVar += '<div class="content">'
-            strVar += '<img class="right floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
-            strVar += '<div class="header">' + toTitleCase(item.ENTITY_NAME) + '</div>'
-            strVar += '<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
-            strVar += '<div class="">' + item.ENTITY_ADDR1 + ", " + item.ENTITY_STATE + ", " + item.ENTITY_CITY + ", " + item.ENTITY_ZIP + '</div>'
-            strVar += '<br>'
-            strVar += '<div class="">' + "Relationship" + ": " + item.REL_TYPE + "-" + item.REL_SUBTYPE + '</div>'
-            strVar += '<br>'
-            strVar += '<div class="">' + "Rep Access" + ": " + item.ENTITY_SREP_ACCESS + '</div>'
-            strVar += '</div>'
-            strVar += '<div class="extra content">'
-            strVar += '<div class="ui small horizontal list">'
-            strVar += '<div class="item"><div class="header">' + item.NO_OF_HOSPS + " HOSPS" + '</div></div>'
-            strVar += '<div class="item"><div class="header">' + item.NO_OF_OUTLETS + " OUTLETS" + '</div></div>'
-            strVar += '<div class="item"><div class="header">' + item.NO_OF_SOCS + " SOCS" + '</div></div>'
-            strVar += '<div class="item"><div class="header">' + item.NO_OF_OSUBS + " OSUBS" + '</div></div>'
-            strVar += '</div>'
+            strVar += '		<div class="content">'
+            strVar += '			<img class="right floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
+            strVar += '			<div class="header">' + toTitleCase(item.ENTITY_NAME) + '</div>'
+            strVar += '			<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
+            strVar += '			<div class="">' + item.ENTITY_ADDR1 + ", " + item.ENTITY_STATE + ", " + item.ENTITY_CITY + ", " + item.ENTITY_ZIP + '</div>'
+            strVar += '			<br>'
+            strVar += '			<div class="">' + "Relationship" + ": " + item.REL_TYPE + "-" + item.REL_SUBTYPE + '</div>'
+            strVar += '			<br>'
+            strVar += '			<div class="">' + "Rep Access" + ": " + item.ENTITY_SREP_ACCESS + '</div>'
+            strVar += '		</div>'
+            strVar += '		<div class="extra content">'
+            strVar += '			<div class="ui small horizontal list">'
+            strVar += '			<div class="item"><div class="header">' + item.NO_OF_HOSPS + " HOSPS" + '</div></div>'
+            strVar += '			<div class="item"><div class="header">' + item.NO_OF_OUTLETS + " OUTLETS" + '</div></div>'
+            strVar += '			<div class="item"><div class="header">' + item.NO_OF_SOCS + " SOCS" + '</div></div>'
+            strVar += '			<div class="item"><div class="header">' + item.NO_OF_OSUBS + " OSUBS" + '</div></div>'
+            strVar += '		</div>'
             strVar += '</div>'
 
             return strVar;
-
         }
 
         function tooltipHoverHandler(d) {
-
-            // // console.log("Event from tooltip hover",d3.event)
-            // if(d3.event.fromElement.tagName != "rect"){return;}
             var content = tooltipContent(d);
             tooltip.html(content);
 
@@ -1210,11 +1126,6 @@ function drawOrganizationChart(params) {
             var y = d3.event.pageY;
             var x = d3.event.pageX;
             
-            // restrict tooltip to fit in borders
-            // if (y < 220) {
-            //     y += 220 - y;
-            //     x += 130;
-            // }
             if (x > attrs.width - 300) {
                 x -= 300 - (attrs.width - x);
             }
@@ -1225,48 +1136,21 @@ function drawOrganizationChart(params) {
 
             tooltip.style('top', (y + 20) + 'px')
                 .style('left', (x + 20) + 'px');
-            
-        }
+		}
+		
         function sideBarHandler(d) {
             var content = sideBarContent(d)
             if (selectedNodeId != "") {
-				d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
-				d3.select(selectedNodeId).attr("stroke-width", "1px")
-	            d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
+				d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.nodeStrokeWidth)
+	            d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
             }
 
-            //sidebar.html(content);
-            //d3.select('.sidebar-wrapper').style('display', 'block').style('opacity', 1)
-	            //$('#sideBar').show()
-
 	        selectedNodeId = ("#N" + d.uniqueIdentifier)
-	        selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
+	        selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
 
             d3.select('#detailsSideBar').html(content)
-            // console.log(d.uniqueIdentifier)
-			d3.select(selectedNodeId).attr("stroke", "teal")
-			d3.select(selectedNodeId).attr("stroke-width", "2px")
-            d3.select(selectedNodeId).attr("fill", "aquamarine")
-
-            // console.log("sidebar")
-        }
-
-
-		document.onkeydown = function(evt) {
-		    evt = evt || window.event;
-		    if (evt.keyCode == 27) {
-		    	d3.select('.sidebar-wrapper').style('display', 'none').style('opacity', 0)
-		         $('#sideBar').hide()
-		    }
-		};
-
-
-        function sideBarOutHandler(d) {
-            sidebar.transition()
-                .duration(200)
-                .style('opacity', '0').style('display', 'none');
-            d3.select('div.sidebar-wrapper').select('div.ui.card').remove()
-
+			d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.selectedNodeStrokeWidth)
+            d3.select(selectedNodeId).attr("fill", nodeAttrs.selectedNodeBackground)
         }
 
         function tooltipOutHandler() {
@@ -1275,17 +1159,12 @@ function drawOrganizationChart(params) {
                 .style('opacity', '0').style('display', 'none');
             d3.select(this).attr("stroke-width", 5);
             d3.select('div.customTooltip-wrapper').select('div.ui.card').remove()
-
         }
-
 
         nodeGroup.on('click', sideBarHandler);
         nodeGroup.on('mouseover', tooltipHoverHandler);
-        // nodeGroup.on('mousemove',tooltipMoveHandler);
         nodeGroup.on('mouseout', tooltipOutHandler);
         nodeGroup.on('contextmenu', d3.contextMenu(menu));
-
-
 
         function equalToEventTarget() {
             return this == d3.event.target;
@@ -1295,22 +1174,11 @@ function drawOrganizationChart(params) {
             var outside = tooltip.filter(equalToEventTarget).empty();
             if (outside) {
                 tooltip.style('opacity', '0').style('display', 'none');
-
             }
-            // var outside1 = sidebar.filter(equalToEventTarget).empty();
-            // if (outside1){
-            //     sidebar.style('opacity', '0').style('display', 'none');
-
-            // }
 		});
 	}
 
-	//********************************************************************************************************************************************** */
-    // Toggle children on click.
     function click(d) {
-        // if (d3.event.defaultPrevented) return; // click suppressed
-        // // console.log("Event Printing", d3.event);
-        
         d3.select(this).select("text").text(function (dv) {
 
             if (dv.collapseText == attrs.EXPAND_SYMBOL) {
@@ -1321,7 +1189,6 @@ function drawOrganizationChart(params) {
                 }
             }
             return dv.collapseText;
-
         })
 
         if (d.children) {
@@ -1332,37 +1199,31 @@ function drawOrganizationChart(params) {
             d._children = null;
         }
         update(d);
-
     }
 
-    //########################################################
-
-    //Redraw for zoom
     function redraw() {
-        //// console.log("here", d3.event.translate, d3.event.scale);
         svg.attr("transform",
             "translate(" + d3.event.translate + ")" +
             " scale(" + d3.event.scale + ")");
     }
 
-    // #############################   Function Area #######################
     function wrap(text, width) {
-
         text.each(function () {
             var text = d3.select(this),
                 words = text.text().split(/\s+/).reverse(),
                 word,
                 line = [],
                 lineNumber = 0,
-                lineHeight = 1.2, // ems
+                lineHeight = 1.2,
                 x = text.attr("x"),
                 y = text.attr("y"),
-                dy = 0, //parseFloat(text.attr("dy")),
+                dy = 0,
                 tspan = text.text(null)
                     .append("tspan")
                     .attr("x", x)
                     .attr("y", y)
-                    .attr("dy", dy + "em");
+					.attr("dy", dy + "em");
+					
             while (word = words.pop()) {
                 line.push(word);
                 tspan.text(line.join(" "));
@@ -1381,10 +1242,8 @@ function drawOrganizationChart(params) {
     }
 
     function addPropertyRecursive(propertyName, propertyValueFunction, element) {
-        if (element[propertyName]) {
-           // element[propertyName] = element[propertyName] + ' ' + propertyValueFunction(element);
-        } else {
-            element[propertyName] = propertyValueFunction(element);
+        if (!element[propertyName]) {
+			element[propertyName] = propertyValueFunction(element);
         }
         if (element.children) {
             element.children.forEach(function (v) {
@@ -1395,23 +1254,6 @@ function drawOrganizationChart(params) {
             element._children.forEach(function (v) {
                 addPropertyRecursive(propertyName, propertyValueFunction, v)
             })
-        }
-    }
-
-
-    function getEmployeesCount(node) {
-        var count = 1;
-        countChilds(node);
-        return count;
-
-        function countChilds(node) {
-            var childs = node.children ? node.children : node._children;
-            if (childs) {
-                childs.forEach(function (v) {
-                    count++;
-                    countChilds(v);
-                })
-            }
         }
     }
 
@@ -1446,7 +1288,6 @@ function drawOrganizationChart(params) {
             }
             strVar += "            <\/div>";
             strVar += "            <div class=\"buttons\">";
-           //strVar += "              <button class='btn-search-box btn-action btn-locate' onclick='params.funcs.locate(" + result.uniqueIdentifier + ")'>Locate <\/button>";
             strVar += "            <\/div>";
             strVar += "          <\/a>";
             strVar += "        <\/div>";
@@ -1468,7 +1309,6 @@ function drawOrganizationChart(params) {
     function clearResult() {
         set('.result-list', '<div class="buffer" ></div>');
         set('.user-search-box .result-header', "RESULT");
-
     }
 
     function listen() {
@@ -1482,7 +1322,6 @@ function drawOrganizationChart(params) {
             } else {
                 
                 var searchResult = params.funcs.findInTree(params.data, value);
-                // debugger;
                 params.funcs.reflectResults(searchResult);
             }
 
@@ -1499,14 +1338,14 @@ function drawOrganizationChart(params) {
 			height = bounds.height;
 		var midX = bounds.x + width / 2,
 			midY = bounds.y + height / 2;
-		if (width == 0 || height == 0) return; // nothing to fit
+		if (width == 0 || height == 0) return;
 		var scale = (paddingPercent || 0.75) / Math.max(width / fullWidth, height / fullHeight);
 		var translate = [fullWidth / 2 - scale * midX, fullHeight / 2 - scale * midY];
 	
 		console.trace("zoomFit", translate, scale);
 		root
 			.transition()
-			.duration(transitionDuration || 0) // milliseconds
+			.duration(transitionDuration || 0)
 			.call(zoomBehaviours.translate(translate).scale(scale).event);
 	}
 
@@ -1526,12 +1365,10 @@ function drawOrganizationChart(params) {
                 params.funcs.clearResult();
                 clear('.search-input');
             });
-
     }
 
     function findInTree(rootElement, searchText) {
         var result = [];
-        // use regex to achieve case insensitive search and avoid string creation using toLowerCase method
         var regexSearchWord = new RegExp(searchText, "i");
 
         recursivelyFindIn(rootElement, searchText);
@@ -1552,14 +1389,12 @@ function drawOrganizationChart(params) {
         };
     }
 
-
     function expandAll() {
-        expand(root);
-        update(root);
+        expand(attrs.root);
+		update(attrs.root);
     }
 
     function expand(d) {
-       
         if (d.children) {
             d.children.forEach(expand);
         }
@@ -1571,10 +1406,17 @@ function drawOrganizationChart(params) {
         }
 
         if (d.children) {
-            // if node has children and it's expanded, then  display -
             setToggleSymbol(d, attrs.COLLAPSE_SYMBOL);
         }
-    }
+	}
+	
+	function collapseAll() {
+		if (attrs.root.children) {
+			attrs.root.children.forEach(collapse);
+		}
+		
+		update(attrs.root);
+	}
 
     function collapse(d) {
         if (d._children) {
@@ -1605,7 +1447,6 @@ function drawOrganizationChart(params) {
         d3.select("*[data-id='" + d.uniqueIdentifier + "']").select('text').text(symbol);
     }
 
-    /* recursively find logged user in subtree */
     function findmySelf(d) {
         if (d.isLoggedUser) {
             expandParents(d);
@@ -1620,29 +1461,26 @@ function drawOrganizationChart(params) {
                 findmySelf(ch);
             });
         };
-
     }
 
     function locateRecursive(d, id) {
         if (d.uniqueIdentifier == id) {
-            // console.log("before expand", d)
             expandParents(d);
-            // console.log("after expand", d)
-        } else if (d._children) {
+		} 
+		else if (d._children) {
             d._children.forEach(function (ch) {
                 ch.parent = d;
                 locateRecursive(ch, id);
             })
-        } else if (d.children) {
+		} 
+		else if (d.children) {
             d.children.forEach(function (ch) {
                 ch.parent = d;
                 locateRecursive(ch, id);
             });
         };
-
     }
 
-    /* expand current nodes collapsed parents */
     function expandParents(d) {
         while (d.parent) {
             debugger;
@@ -1652,12 +1490,10 @@ function drawOrganizationChart(params) {
                 d._children = null;
                 setToggleSymbol(d, attrs.COLLAPSE_SYMBOL);
             }
-
         }
     }
 
     function toggleFullScreen() {
-
         if ((document.fullScreenElement && document.fullScreenElement !== null) ||
             (!document.mozFullScreen && !document.webkitIsFullScreen)) {
             if (document.documentElement.requestFullScreen) {
@@ -1678,10 +1514,7 @@ function drawOrganizationChart(params) {
             }
             d3.select(params.selector + ' svg').attr('width', params.chartWidth).attr('height', params.chartHeight);
         }
-
     }
-
-
 
     function JSONdownload() {
         var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(circularRemovedNode);
@@ -1689,32 +1522,18 @@ function drawOrganizationChart(params) {
         dlAnchorElem.setAttribute("href", dataStr);
         dlAnchorElem.setAttribute("download", "data.json");
         dlAnchorElem.click();
-
     }
 
-    //locateRecursive
     function locate(id, recursive = true) {
-        
-        /* collapse all and expand logged user nodes */
-        // if (!attrs.root.children) {
-        //     if (!attrs.root.uniqueIdentifier == id) {
-        //         attrs.root.children = attrs.root._children;
-        //     }
-        // }
-        // if (attrs.root.children) {
-        //     attrs.root.children.forEach(collapse);
-        //     attrs.root.children.forEach(function (ch) {
-        //         locateRecursive(ch, id)
-        //     });
-        // }
-        // debugger;
-
         var copy_object = _.cloneDeep(attrs.root)
-        expand(copy_object)
-        var  final_path = Array.from(new Set(recfind (copy_object, id,[])))
-        // console.log(final_path)
+		expand(copy_object)
+		var temp = recursiveFind(copy_object, id,[]);
+
+		console.log(temp);
+
+        var  final_path = Array.from(new Set(temp))
         final_path.forEach(element => {
-            // console.log("path",element)
+             console.log("path",element)
         });
         final_path.shift()
 
@@ -1722,84 +1541,51 @@ function drawOrganizationChart(params) {
             attrs.root.children.forEach(collapse);
         }
         
-        expandSelectedNodes(attrs.root,final_path)
+        expandSelectedNodes(attrs.root, final_path, id)
 
 		update(attrs.root, {
             locate: id
         })
-/*
-        update(attrs.root, {
-            locate: id
-        }).then( function() {
-			alert("hello")
-		})*/
-
 
 		if (selectedNodeId != "") {
 			d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
-			d3.select(selectedNodeId).attr("stroke-width", "1px")
-            d3.select(selectedNodeId).attr("fill", selectedNodeBgColor)            	
+			d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.nodeStroke)
+            d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
         }
 
 		selectedNodeId = ("#N" + id)
 		if (d3.select(selectedNodeId) == null) {
-        	selectedNodeBgColor = d3.select(selectedNodeId).attr("fill")
+        	selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
 		}
 		else {
-			selectedNodeBgColor = "#fff"
+			selectedOriginalBackground = "#fff"
 		}
-        // console.log(id)
-        d3.select(selectedNodeId).attr("stroke", "#f00")
-        d3.select(selectedNodeId).attr("stroke-width", "2px")
-        d3.select(selectedNodeId).attr("fill", "aquamarine")
-
-        //document.getElementById(selectedNodeId.replace('#', '')).click()
+        d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.selectedNodeStrokeWidth)
+        d3.select(selectedNodeId).attr("fill", nodeAttrs.selectedNodeBackground)
 
         var elem = document.getElementById(selectedNodeId.replace('#', ''))
 		if (elem != null) {
 			var evt = document.createEvent("MouseEvents");
 			evt.initMouseEvent(
-			"click", /* type */
-			true, /* canBubble */
-			true, /* cancelable */
-			window, /* view */
-			0, /* detail */
-			0,  /* screenX */
-			0, /* screenY */
-			0, /* clientX */
-			0, /* clientY */
-			false, /* ctrlKey */
-			false, /* altKey */
-			false, /* shiftKey */
-			false, /* metaKey */
-			0, /* button */
-			null); /* relatedTarget */
+			"click", // Type
+			true, // Can bubble
+			true, // Cancelable
+			window, // View
+			0, // Detail
+			0, // ScreenX
+			0, // ScreenY
+			0, // ClientX
+			0, // ClientY
+			false, // Ctrl key
+			false, // Alt key
+			false, // Shift key
+			false, // Meta key
+			0, // Button
+			null); // RelatedTarget
 
 			elem.dispatchEvent(evt);			
 		}
 	}
-
-
-    function deepClone(item) {
-        return JSON.parse(JSON.stringify(item));
-    }
-
-    function show(selectors) {
-        display(selectors, 'initial')
-    }
-
-    function hide(selectors) {
-        display(selectors, 'none')
-    }
-
-    function display(selectors, displayProp) {
-        selectors.forEach(function (selector) {
-            var elements = getAll(selector);
-            elements.forEach(function (element) {
-                element.style.display = displayProp;
-            })
-        });
-    }
 
     function set(selector, value) {
         var elements = getAll(selector);
@@ -1822,13 +1608,6 @@ function drawOrganizationChart(params) {
     }
 
     function toTitleCase(str) {
-        // return str.replace(
-        //     /\w\S*/g,
-        //     function (txt) {
-        //         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-        //     }
-        // );
-
         str = str.split(' ');
         for (var i = 0; i < str.length; i++) {
             for (var j=0; j<str[i].length; j++) {
@@ -1841,11 +1620,13 @@ function drawOrganizationChart(params) {
             }
         }
         return str.join(' ');
-    };
+	};
+	
     var overCircle = function (d) {
         selectedNode = d;
         updateTempConnector();
-    };
+	};
+	
     var outCircle = function (d) {
         selectedNode = null;
         updateTempConnector();
@@ -1854,7 +1635,6 @@ function drawOrganizationChart(params) {
     // Function to update the temporary connector indicating dragging affiliation
     var updateTempConnector = function () {
         var data = [];
-        // // console.log('draggingNode', draggingNode, "selectedNode", selectedNode)
         if (draggingNode !== null && selectedNode !== null) {
             // have to flip the source coordinates since we did this for the existing connectors on the original tree
             data = [{
@@ -1868,7 +1648,6 @@ function drawOrganizationChart(params) {
                 }
             }];
         }
-        // // console.log("data-d",data)
         var link = svg.selectAll(".templink").data(data);
         
         link.enter().append("path")
@@ -1876,24 +1655,24 @@ function drawOrganizationChart(params) {
             .attr("d", d3.svg.diagonal())
             .attr('pointer-events', 'none');
 
-        link.attr("d", diagonal(d.source,d.target));
+        link.attr("d", drawLink(d.source,d.target));
 
         link.exit().remove();
-    };
+	};
 
-    function recfind (node, value,path){    
+    function recursiveFind(node, value,path){    
         if (node.uniqueIdentifier == value){
-            // console.log("XXXXfound the elementXXXX")
             path.push(node)
             return path
-        }
-        // node.children.forEach
-        else if(node.children){
-          for (let index = 0; index < node.children.length; index++) {
+		}
+		
+        else if(node.kids){
+          for (let index = 0; index < node.kids.length; index++) {
 
               path.push(node)
-              var fo = recfind(node.children[index],value,path)
-              if( fo )
+              var fo = recursiveFind(node.kids[index],value,path)
+			 
+			  if(fo)
               {
                 return fo 
               }
@@ -1903,38 +1682,35 @@ function drawOrganizationChart(params) {
           if (node.children && node.children[node.children.length-1].uniqueIdentifier != node.kids[node.kids.length - 1].uniqueIdentifier  )
           {
             var currPageNo  = node.children[0].pageNo
-            // console.log("cuurent Page",currPageNo)
             node.children = node.kids.filter( kid => kid.pageNo == currPageNo+1)
 
             path.push(node)
-            var fo = recfind(node,value,path)
-                if( fo )
+            var fo = recursiveFind(node,value,path)
+            if(fo)
                 {
-                  return fo 
+                  return fo;
                 }
-                else{ path.pop() }
+                else { path.pop(); }
           
           }
-          else{ return false}
+          else{ return false; }
         }
         else{
-            return false
+            return false;
         }
-    }
+	}
+
+	// Collapse the tree and expand the nodes in the path
     function expandSelectedNodes(node,path){
-        
+		collapseAll();
+		update(attrs.root);
         while(path.length > 0)
         {
+			console.log(path[0].ENTITY_NAME + '   ' + path[0].pageNo)
             node.children = node.kids.filter( kid => kid.pageNo == path[0].pageNo)
-            node = node.children.filter(next_node => next_node.uniqueIdentifier == path[0].uniqueIdentifier)[0]
-            path.shift()
+			node = node.children.filter(next_node => next_node.uniqueIdentifier == path[0].uniqueIdentifier)[0]
+			expand(node)
+			path.shift()
         }
-                
-        // var next_nod = node.children.filter(next_node => next_node.uniqueIdentifier == path[0].uniqueIdentifier)[0]
-        // path.shift()
-        // expandSelectedNodes(next_nod,path)
-        
     }
-
-    
 }
