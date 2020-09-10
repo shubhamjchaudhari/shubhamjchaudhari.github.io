@@ -84,6 +84,11 @@
     	<i class="search icon" style="color: white;"></i>
     	Search
     </button>
+
+    <button class="btn-tableau" onclick="params.funcs.renderTableau()" hidden>
+    	Show Tableau
+    </button>
+
     <div class="department-information">
     	<div class="dept-name">
     		dept name
@@ -318,8 +323,8 @@
     	</div>
     </div>
 
-
     <div class="details-side-bar" id="detailsSideBar" style="border: 2px solid teal">
+	
     </div>
     <div id="svgChart" style="float: right;">
 
@@ -382,10 +387,10 @@
 
 
     	var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3)
-    	d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
-    	d3.select('.details-side-bar').style('height', (params.chartHeight + 50) + "px")
+		var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
 
-    	var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
+    	d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
+    	d3.select('.details-side-bar').style('height', (window.innerHeight - navbarHeight) + "px")
 
     	d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
     	d3.select('.details-side-bar').style('position', "fixed")

@@ -368,6 +368,21 @@
   padding-right: 15px;
 }
 
+.btn-tableau {
+	top: 12px;
+	position: absolute;
+	right: 200px;
+	background-color: transparent; 
+	border: 2px solid white; 
+	border-radius: 5px; 
+	color: white; 
+	padding-top: 10px; 
+	padding-bottom: 10px; 
+	padding-left: 15px; 
+	padding-right: 15px;
+  }
+  
+
 .btn-search:after {
 
 }

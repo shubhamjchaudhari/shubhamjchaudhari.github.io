@@ -15,6 +15,7 @@ function drawOrganizationChart(params) {
 	params.funcs.fitToScreen = fitToScreen;
 	params.funcs.collapseAll = collapseAll;
 	params.funcs.expandAll = expandAll;
+	params.funcs.renderTableau = renderTableau;
 
 	var colorCategory = params.colorCategory;
 
@@ -269,7 +270,9 @@ function drawOrganizationChart(params) {
                 addPageno(d1);
             })
         }
-    }
+	}
+	
+	console.log(JSON.stringify(attrs.root))
     addPageno(attrs.root) 
     
     expand(attrs.root);
@@ -401,7 +404,6 @@ function drawOrganizationChart(params) {
 			}
 		}
 	}
-
 
     outer_update = null
     function update(source, param, locate=false) {
@@ -1176,6 +1178,13 @@ function drawOrganizationChart(params) {
                 tooltip.style('opacity', '0').style('display', 'none');
             }
 		});
+
+		/*if(id) {
+			setTimeout(function () {
+				fitToScreen();
+			}, 1000);
+		}*/
+		
 	}
 
     function click(d) {
@@ -1525,6 +1534,7 @@ function drawOrganizationChart(params) {
     }
 
     function locate(id, recursive = true) {
+		console.log("Start Locate")
         var copy_object = _.cloneDeep(attrs.root)
 		expand(copy_object)
 		var temp = recursiveFind(copy_object, id,[]);
@@ -1545,7 +1555,9 @@ function drawOrganizationChart(params) {
 
 		update(attrs.root, {
             locate: id
-        })
+		})
+		
+		console.log("End Locate")
 
 		if (selectedNodeId != "") {
 			d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
@@ -1712,5 +1724,9 @@ function drawOrganizationChart(params) {
 			expand(node)
 			path.shift()
         }
-    }
+	}
+	
+	function renderTableau() {
+		window.location.href="testTableau.html";
+	}
 }
