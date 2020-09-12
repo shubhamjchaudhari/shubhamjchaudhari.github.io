@@ -83,7 +83,7 @@ function drawOrganizationChart(params) {
         minMaxZoomProportions: [0.0005, 200],
         linkLineSize: 150,
         collapsibleFontSize: '15px',
-        userIcon: '\uf007',
+        userIcon: '\uf0f8',
         nodeStroke: "teal",
         nodeStrokeWidth: '1px'
     }
@@ -782,13 +782,14 @@ function drawOrganizationChart(params) {
 
             return position;
 		})
-			
+
         nodeGroup.append("text")
             .attr("x", nodeAttrs.nodeTextLeftMargin)
             .attr("y", nodeAttrs.nodeChildCountTopMargin)
             .attr('class', 'emp-count-icon')
             .attr("text-anchor", "left")
             .style('font-family', 'FontAwesome')
+            .style('font-size', '12px')
             .text(function (d) {
                 if (d.children || d._children) return attrs.userIcon;
             });
@@ -1004,7 +1005,7 @@ function drawOrganizationChart(params) {
             	.append("g")
             	.attr("class", "page-text")
            		.attr("transform", function(d) {
-					var x = currPar.x+ 180 
+					var x = currPar.x+ 150 
     		        var y = currPar.y+ 100 
 	        	    return "translate(" + x + "," + y + ")";
             	})
