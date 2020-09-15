@@ -57,6 +57,7 @@ function drawOrganizationChart(params) {
     var create_node_parent = null;
     var node_to_rename = null;
     var circularRemovedNode;
+
     var RelationSubtypeColors = {
         "Filled": "slategrey",
         "Owned": "blue",
@@ -73,42 +74,59 @@ function drawOrganizationChart(params) {
         COLLAPSE_SYMBOL: '-',
         selector: params.selector,
         root: params.data,
-        width: params.chartWidth,
-        height: params.chartHeight,
         index: 0,
-        nodePadding: 9,
-        collapseCircleRadius: 9,
         duration: 600,
-        rootNodeTopMargin: 20,
         minMaxZoomProportions: [0.0005, 200],
         linkLineSize: 150,
-        collapsibleFontSize: '15px',
         userIcon: '\uf0f8',
         nodeStroke: "teal",
         nodeStrokeWidth: '1px'
     }
 
+    var dimens = {};
+    // Element dimensions
+    dimens.chartWidth = params.chartWidth;
+    dimens.chartHeight = params.chartHeight;
+    dimens.nodeWidth = ((params.chartWidth / 4) < 270)? (params.chartWidth / 4) : 270;
+    dimens.nodeHeight = (80 * dimens.nodeWidth) / 270;    
+    dimens.nodeEntityImageWidth = (dimens.nodeHeight * 100 / 190);
+    dimens.nodePadding = dimens.nodeWidth / 30;
+    dimens.nodeEntityImageHeight = (dimens.nodeHeight - 2 * dimens.nodePadding - 4);
+
+    // Element paddings and dimensions
+    
+    dimens.rootNodeLeftMargin = params.chartWidth / 2;
+    dimens.rootNodeTopMargin = 20;    
+    dimens.nodeEntityNameTopmargin = (dimens.nodePadding + 10) 
+    dimens.nodeEmpEntityNameTopmargin = ((dimens.nodeHeight / 1.5)) 
+    dimens.nodeEmpCountTopMargin = parseInt((dimens.nodeHeight / 1.5) + ((11 * dimens.nodeWidth) / 270) + 5) ;
+    dimens.nodeTextLeftMargin = dimens.nodeEntityImageWidth + 2 * dimens.nodePadding;
+
+    // Element sizes
+    dimens.collapseCircleRadius = dimens.nodeWidth / 30;
+    dimens.nodeStrokeWidth = '1px';
+    dimens.selectedNodeStrokeWidth = ((2.5 * dimens.nodeWidth) / 270) + 'px';
+
+    // Font sizes
+    dimens.collapsibleFontSize = 15;
+    dimens.nodeEntityNameFontSize = ((12 * dimens.nodeWidth) / 270) + 'px';
+    dimens.nodeEmpEntityNameFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
+    dimens.nodeEmpCountFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
+    dimens.sideBarTitleFontSize = ((18 * dimens.nodeWidth) / 270) + 'px';
+    dimens.sideBarSubTitleFontSize = ((14 * dimens.nodeWidth) / 270) + 'px';
+    dimens.sideBarContentFontSize = Math.ceil((14 * params.detailsSideBarWidth) / 300) + 'px';
+
 	// Attributes related to individual nodes
-    var nodeAttrs = {}
-	nodeAttrs.nodeWidth = 270;
-	nodeAttrs.nodeHeight = 80;
-	nodeAttrs.nodeImageWidth = nodeAttrs.nodeHeight * 100 / 190;
-    nodeAttrs.nodeImageHeight = nodeAttrs.nodeHeight - 2 * attrs.nodePadding;
-    nodeAttrs.nodeTextLeftMargin = attrs.nodePadding * 2 + nodeAttrs.nodeImageWidth
-    nodeAttrs.rootNodeLeftMargin = attrs.width / 2;
-    nodeAttrs.nodePositionNameTopMargin = attrs.nodePadding + 8 + nodeAttrs.nodeImageHeight / 4 * 1;
-	nodeAttrs.nodeChildCountTopMargin = attrs.nodePadding + 14 + nodeAttrs.nodeImageHeight / 4 * 3;
-	nodeAttrs.nodeStroke = 'teal';
-	nodeAttrs.nodeStrokeWidth = '1px';
-	nodeAttrs.selectedNodeBackground = '#ffeeff';
-	nodeAttrs.selectedNodeStrokeWidth = '2.5px';
-	nodeAttrs.filledNodeBackground = '#dedede';
-	nodeAttrs.unfilledNodeBackground = '#ffffff'
+    var colors = {}
+	colors.nodeStroke = 'teal';
+	colors.selectedNodeBackground = '#ffeeff';
+	colors.filledNodeBackground = '#dedede';
+	colors.unfilledNodeBackground = '#ffffff'
 	
     var selectedNode = null;
 	var draggingNode = null;
 	
-    // panning variables
+    // Panning variables
     var panSpeed = 200;
 	var panBoundary = 20;
 
@@ -156,7 +174,7 @@ function drawOrganizationChart(params) {
 		}
 	}
 
-	// modify the generated data structures
+	// Modify the generated data structures
 	function modifyDataStrucutres() {		
 		var keys = Object.keys(classifierData);
 		for (var i=0; i<keys.length; i+=1) {
@@ -173,16 +191,16 @@ function drawOrganizationChart(params) {
 	generateDataStructures(attrs.root, 0)
 	modifyDataStrucutres();
 
-    var tree = d3.layout.tree().nodeSize([nodeAttrs.nodeWidth + 40, nodeAttrs.nodeHeight])
+    var tree = d3.layout.tree().nodeSize([dimens.nodeWidth + 40, dimens.nodeHeight])
                 .separation(function(a, b) {
         return a.parent == b.parent ? 1 : 1.15;
     });
 
     function drawLink(s, t) {
-        const x = s.x + nodeAttrs.nodeWidth / 2;
-        const y = s.y + nodeAttrs.nodeHeight / 2;
-        const ex = t.x + nodeAttrs.nodeWidth / 2;
-        const ey = t.y + nodeAttrs.nodeHeight / 2;
+        const x = s.x + dimens.nodeWidth / 2;
+        const y = s.y + dimens.nodeHeight / 2;
+        const ex = t.x + dimens.nodeWidth / 2;
+        const ey = t.y + dimens.nodeHeight / 2;
 
         let xrvs = ex - x < 0 ? -1 : 1;
         let yrvs = ey - y < 0 ? -1 : 1;
@@ -228,22 +246,22 @@ function drawOrganizationChart(params) {
     var svg = d3.select(attrs.selector)
 		.append("svg")
 		.attr('id', 'svgDiv')
-        .attr("width", attrs.width)
-		.attr("height", attrs.height)
-		.attr("viewBox", "0 0 " + attrs.width + " " + attrs.height )
+        .attr("width", dimens.chartWidth)
+		.attr("height", dimens.chartHeight)
+		.attr("viewBox", "0 0 " + dimens.chartWidth + " " + dimens.chartHeight )
 		.attr("preserveAspectRatio", "xMinYMin meet")
-        .attr("margin-left", (window.innerWidth - attrs.width))
+        .attr("margin-left", (window.innerWidth - dimens.chartWidth))
         .attr("top", 0)
         .call(zoomBehaviours)
 		.append("g")
 		.attr('id', 'drawArea')
-        .attr("transform", "translate(" + attrs.width / 2 + "," + 20 + ")");
+        .attr("transform", "translate(" + dimens.chartWidth / 2 + "," + 20 + ")");
         // filters go in defs element
    
-    zoomBehaviours.translate([nodeAttrs.rootNodeLeftMargin, attrs.rootNodeTopMargin]);
+    zoomBehaviours.translate([dimens.rootNodeLeftMargin, dimens.rootNodeTopMargin]);
 
     attrs.root.x0 = 0;
-    attrs.root.y0 = nodeAttrs.rootNodeLeftMargin;
+    attrs.root.y0 = dimens.rootNodeLeftMargin;
     if (params.mode != 'department') {
         
         // adding unique values to each node recursively		
@@ -258,9 +276,7 @@ function drawOrganizationChart(params) {
 	function addPageno(d) {
         if (d && d.kids) {
             d.page = 1;
-            d.children = [];
-            // console.log(d.ENTITY_NAME)
-            
+            d.children = [];            
             d.kids.forEach(function (d1, i) {
               
                 d1.pageNo = Math.ceil((i + 1) / PAGINATION);
@@ -272,7 +288,6 @@ function drawOrganizationChart(params) {
         }
 	}
 	
-	console.log(JSON.stringify(attrs.root))
     addPageno(attrs.root) 
     
     expand(attrs.root);
@@ -283,7 +298,7 @@ function drawOrganizationChart(params) {
 
 	update(attrs.root);
 	
-    d3.select(attrs.selector).style("height", attrs.height);
+    d3.select(attrs.selector).style("height", dimens.chartHeight);
 
     var tooltip = d3.select('body')
         .append('div')
@@ -383,7 +398,7 @@ function drawOrganizationChart(params) {
 			case 9: parameter = 'EXPRESSION_SEGMENT'; break;
 		}
 
-		if (!node[parameter]) return nodeAttrs.unfilledNodeBackground;
+		if (!node[parameter]) return colors.unfilledNodeBackground;
 
 		if(typeof node[parameter] == 'string') {
 			return colorCategory[node[parameter].toLowerCase()]
@@ -671,8 +686,8 @@ function drawOrganizationChart(params) {
             .attr("class", "node-group")            
 
         nodeGroup.append("rect")
-            .attr("width", nodeAttrs.nodeWidth)
-            .attr("height", nodeAttrs.nodeHeight)
+            .attr("width", dimens.nodeWidth)
+            .attr("height", dimens.nodeHeight)
             .attr("id", function(d) {
             	return ('N' + d.uniqueIdentifier);
             })
@@ -682,13 +697,12 @@ function drawOrganizationChart(params) {
             .attr('rx', '.5rem')
             .attr("fill", function (d) {
 				var cl = ""
-				console.log('params.colorBy = ' + params.colorBy);
 				if (params.colorBy < 1) {
 					if (d.ENTITY_NAME.startsWith("(Filled)")) {
-						return nodeAttrs.filledNodeBackground
+						return colors.filledNodeBackground
 					}
 					else {
-						return nodeAttrs.unfilledNodeBackground
+						return colors.unfilledNodeBackground
 					}
 				}
 				else {
@@ -715,25 +729,27 @@ function drawOrganizationChart(params) {
                 outCircle(node);
 			});
 			
-			console.log(source)
 
         nodeGroup.append("text")
         	.attr('id', function(d) {
             	return ('N' + d.uniqueIdentifier +"name");
             })
-            .attr("x", nodeAttrs.nodeTextLeftMargin)
-            .attr("y", attrs.nodePadding + 10)
+            .attr("x", dimens.nodeTextLeftMargin)
+            .attr("y", dimens.nodeEntityNameTopmargin)
             .attr('class', 'entity-name')
+            .style('font-size', dimens.nodeEntityNameFontSize)
             .attr("text-anchor", "left")
+            .style('word-break', 'break-all')
             .text(function (d) {
                 return toTitleCase(d.ENTITY_NAME.toLowerCase()).trim();
             })
-            .call(wrap, 200);
+            .call(wrap, (200 * dimens.nodeWidth) / 270);
 
         nodeGroup.append("text")
-            .attr("x", nodeAttrs.nodeTextLeftMargin)
-            .attr("y", nodeAttrs.nodePositionNameTopMargin + 20)
+            .attr("x", dimens.nodeTextLeftMargin)
+            .attr("y", dimens.nodeEmpEntityNameTopmargin)
             .attr('class', 'emp-position-name')
+            .style('font-size', dimens.nodeEmpEntityNameFontSize)
             .attr("dy", ".35em")
             .attr("text-anchor", "left")
             .text(function (d) {
@@ -752,24 +768,24 @@ function drawOrganizationChart(params) {
 				var collapsibles =
 					collapsiblesWrapper.append("circle")
 						.attr('class', 'node-collapse')
-						.attr('cx', nodeAttrs.nodeWidth/2)
-						.attr('cy', nodeAttrs.nodeHeight )
+						.attr('cx', dimens.nodeWidth/2)
+						.attr('cy', dimens.nodeHeight)
 						.attr("", setCollapsibleSymbolProperty);
 	
 				//hide collapse rect when node does not have children
 				collapsibles.attr("r", function (d) {
-					if (d.children || d._children) return attrs.collapseCircleRadius;
+					if (d.children || d._children) return ((dimens.collapseCircleRadius * dimens.nodeWidth) / 270);
 					return 0;
 				})
-				.attr("height", attrs.collapseCircleRadius)
+				.attr("height", ((dimens.collapseCircleRadius * dimens.nodeWidth) / 270))
 	
 				collapsiblesWrapper.append("text")
 					.attr('class', 'text-collapse')
-					.attr("x", nodeAttrs.nodeWidth/2 )
-					.attr('y', nodeAttrs.nodeHeight +4.5)
-					.attr('width', attrs.collapseCircleRadius)
-					.attr('height', attrs.collapseCircleRadius)
-					.style('font-size', attrs.collapsibleFontSize)
+					.attr("x", dimens.nodeWidth/2 )
+					.attr('y', dimens.nodeHeight + ((4.5 * dimens.nodeWidth) / 270))
+					.attr('width', ((dimens.collapseCircleRadius * dimens.nodeWidth) / 270))
+					.attr('height', ((dimens.collapseCircleRadius * dimens.nodeWidth) / 270))
+					.style('font-size', ((dimens.collapsibleFontSize * dimens.nodeWidth) / 270))
 					.attr("text-anchor", "middle")
 					.style('font-family', 'Fira Code')
 					.style('font-weight', '500')
@@ -784,20 +800,21 @@ function drawOrganizationChart(params) {
 		})
 
         nodeGroup.append("text")
-            .attr("x", nodeAttrs.nodeTextLeftMargin)
-            .attr("y", nodeAttrs.nodeChildCountTopMargin)
+            .attr("x", dimens.nodeTextLeftMargin)
+            .attr("y", dimens.nodeEmpCountTopMargin)
             .attr('class', 'emp-count-icon')
             .attr("text-anchor", "left")
             .style('font-family', 'FontAwesome')
-            .style('font-size', '12px')
+            .style('font-size', dimens.nodeEmpCountFontSize)
             .text(function (d) {
                 if (d.children || d._children) return attrs.userIcon;
             });
 
         nodeGroup.append("text")
-            .attr("x", nodeAttrs.nodeTextLeftMargin + 13)
-            .attr("y", nodeAttrs.nodeChildCountTopMargin)
+            .attr("x", dimens.nodeTextLeftMargin + ((13 * dimens.nodeWidth) / 270))
+            .attr("y", dimens.nodeEmpCountTopMargin)
             .attr('class', 'emp-count')
+            .style('font-size', dimens.nodeEmpCountFontSize)
             .attr("text-anchor", "left")
 
             .text(function (d) {
@@ -810,18 +827,17 @@ function drawOrganizationChart(params) {
             .append("svg:rect")
             .attr("id", "clip-rect")
             .attr("rx", 3)
-            .attr('x', attrs.nodePadding)
-            .attr('y', 2 + attrs.nodePadding)
-            .attr('width', nodeAttrs.nodeImageWidth)
+            .attr('x', dimens.nodePadding)
+            .attr('y', 2 + dimens.nodePadding)
+            .attr('width', dimens.nodeEntityImageWidth)
             .attr('fill', 'none')
-            .attr('height', nodeAttrs.nodeImageHeight - 4)
+            .attr('height', dimens.nodeEntityImageHeight)
 
         nodeGroup.append("svg:image")
-            .attr('y', 2 + attrs.nodePadding)
-            .attr('x', attrs.nodePadding)
-            .attr('preserveAspectRatio', "")
-            .attr('width', nodeAttrs.nodeImageWidth)
-            .attr('height', nodeAttrs.nodeImageHeight - 4)
+            .attr('x', dimens.nodePadding)
+            .attr('y', 2 + dimens.nodePadding)
+            .attr('width', dimens.nodeEntityImageWidth)
+            .attr('height', dimens.nodeEntityImageHeight)
             .attr('clip-path', "url(#clip)")
             .attr("xlink:href", function (v) {
                 
@@ -836,21 +852,21 @@ function drawOrganizationChart(params) {
 
         //todo replace with attrs object
         nodeUpdate.select("rect")
-            .attr("width", nodeAttrs.nodeWidth)
-            .attr("height", nodeAttrs.nodeHeight)
+            .attr("width", dimens.nodeWidth)
+            .attr("height", dimens.nodeHeight)
             .attr('rx', 3)
             .attr("stroke", function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
                 }
                 else {
-                	return attrs.nodeStroke;
+                	return colors.nodeStroke;
             	}
             })
             .attr('stroke-width', function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
                     return "1px";
                 }
-                return attrs.nodeStrokeWidth
+                return dimens.nodeStrokeWidth
             })
 
         var nodeExit = node.exit()
@@ -869,8 +885,8 @@ function drawOrganizationChart(params) {
             .attr('opacity', 0);
   
         nodeExit.select("rect")
-            .attr("width", nodeAttrs.nodeWidth)
-            .attr("height", nodeAttrs.nodeHeight)
+            .attr("width", dimens.nodeWidth)
+            .attr("height", dimens.nodeHeight)
 
         // Update the links…
         var link = svg.selectAll("path.link")
@@ -883,8 +899,8 @@ function drawOrganizationChart(params) {
         // Enter any new links at the parent's previous position.
         link.enter().insert("path", "g")
             .attr("class", "link")
-            .attr("x", nodeAttrs.nodeWidth / 2)
-            .attr("y", nodeAttrs.nodeHeight / 2)
+            .attr("x", dimens.nodeWidth / 2)
+            .attr("y", dimens.nodeHeight / 2)
             .attr("stroke", function (d) {                
                 return RelationSubtypeColors[d.target.REL_TYPE]
             })
@@ -978,15 +994,15 @@ function drawOrganizationChart(params) {
               	.append("g")
               	.attr("class", "page")
               	.attr("transform", function(d) {
-                	var x = (d.type == "next") ? currPar.x + 260 : currPar.x + 10;
-                	var y = (d.type == "prev") ? currPar.y+ 80 + 17 : currPar.y+ 80 + 17;
+                	var x = (d.type == "next") ? currPar.x + ((260 * dimens.nodeWidth) / 270) : currPar.x + ((10 * dimens.nodeWidth) / 270);
+                	var y = currPar.y + ((97 * dimens.nodeWidth) / 270);
                 	return "translate(" + x + "," + y + ")";
 				})
 				.on("click", paginate);
           
             pageControl
               	.append("circle")
-              	.attr("r", 13)
+              	.attr("r", ((13 * dimens.nodeWidth) / 270))
               	.style("fill", "#eeeeee");
             pageControl
               	.append("image")
@@ -994,10 +1010,10 @@ function drawOrganizationChart(params) {
                 	if (d.type == "next") { return "next_2.svg" } 
 					else { return "prev_2.svg" }
               	})
-              	.attr("x", -7)
-              	.attr("y", -7)
-              	.attr("width", 15)
-              	.attr("height", 15);
+              	.attr("x", ((-7 * dimens.nodeWidth) / 270))
+              	.attr("y", ((-7 * dimens.nodeWidth) / 270))
+              	.attr("width", ((15 * dimens.nodeWidth) / 270))
+              	.attr("height", ((15 * dimens.nodeWidth) / 270));
 
 			var pageTextControl = svg.selectAll(".page-text")
             	.data(pageTextData)
@@ -1005,12 +1021,13 @@ function drawOrganizationChart(params) {
             	.append("g")
             	.attr("class", "page-text")
            		.attr("transform", function(d) {
-					var x = currPar.x+ 150 
-    		        var y = currPar.y+ 100 
+					var x = currPar.x + ((150 * dimens.nodeWidth) / 270); 
+    		        var y = currPar.y + ((100 * dimens.nodeWidth) / 270);
 	        	    return "translate(" + x + "," + y + ")";
             	})
 			
-			pageTextControl.append("text")
+            pageTextControl.append("text")
+                .style('font-size', ((14 * dimens.nodeWidth) / 270))
             	.text(function (d) {
             		return "Page "+d.currPage +" / "+d.TotalPage
         		})
@@ -1064,30 +1081,30 @@ function drawOrganizationChart(params) {
             var addvar = item.ENTITY_ADDR1 + ', ' + item.ENTITY_STATE + ', ' + item.ENTITY_CITY + ', ' + item.ENTITY_ZIP;
 
             var strVar = '';
-            strVar += '<div class="ui card sidebarcard">'
-            strVar += '		<div class="content">'
-            strVar += '			<img class="left floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
-            strVar += '			<div class="header" style="font-size: 18px;">' + toTitleCase(item.ENTITY_NAME) + '</div>'
-            strVar += '			<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
-            strVar += '			<div><address> <a style="font-size: 12px;" target="_blank" href="' + 'https://maps.google.com/?q=' + addvar + '">' + addvar + ' </a> </address></div>'
-            strVar += '			<div class="ui divider"></div><div class="description">'
-            strVar += '				<div>Net Patient Revenue </span> <span class= "right-float"><b>$ ' + item.NET_PATIENT_REVENUE + 'B</b></span> </div><br>'
-            strVar += '				<div>Net Income: </span> <span class= "right-float"><b>$ ' + item.NET_INCOME + 'B</b></span> </div><br>'
-            strVar += '				<div>Net Income Margin: </span> <span class= "right-float"><b>$ ' + item.NET_INCOME_MARGIN + 'B</b></span> </div>'
-            strVar += '				<div class="ui divider"></div>'
-            strVar += '				<div>No of Employed Physicians  </span> <span class= "right-float"><b>342</b></span> </div><br>'
-            strVar += '				<div>No of Affiliated OSUBs </span> <span class= "right-float"><b>' + item.NO_OF_OSUBS + '</b></span> </div><br>'
-            strVar += '				<div>No of Affiliated Hospitals </span> <span class= "right-float"><b>' + item.NO_OF_HOSPS + '</b></span> </div><br>'
-            strVar += '				<div>No of Affiliated SOCs </span> <span class= "right-float"><b>' + item.NO_OF_SOCS + '</b></span> </div>'
-            strVar += '				<div class="ui divider"></div>'
-            strVar += '				<div>Structure Segment: </span> <span class= "right-float"><b>' + item.STRUCTURE_SEGMENT + '</b></span> </div><br>'
-            strVar += '				<div>Patient Experience Segment: </span> <span class= "right-float"><b>' + item.PATIENT_EXPERIENCE_SEGEMENT + '</b></span> </div><br>'
-            strVar += '				<div>Quality Segment: </span> <span class= "right-float"><b>' + item.QUALITY_SEGMENT + '</b></span> </div><br>'
-            strVar += '				<div>Research Segment: </span> <span class= "right-float"><b>' + item.RESEARCH_SEGEMENT + '</b></span> </div><br>'
-            strVar += '				<div>Willingness to Partner Segment: </span> <span class= "' + item.WILLINGNESS_TO_PATNER_SEGMENT + '-float"><b>Medium</b></span> </div><br>'
-            strVar += '				<div>Expression Segment: </span> <span class= "right-float"><b>' + item.EXPRESSION_SEGMENT + '</b></span> </div>'
-            strVar += '		</div>'
-            strVar += '</div>'
+            strVar += `<div class="ui card sidebarcard">`
+            strVar += `		<div class="content">`
+            strVar += `			<img class="left floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">`
+            strVar += `			<div class="header" style="font-size: ${dimens.sideBarTitleFontSize};">${toTitleCase(item.ENTITY_NAME)}</div>`
+            strVar += `			<div class="meta" style="font-size: ${dimens.sideBarSubTitleFontSize}">${item.ENTITY_ORG_TYPE}</div>`
+            strVar += `			<div><address> <a style="font-size: ${dimens.sideBarSubTitleFontSize};" target="_blank" href="https://maps.google.com/?q=${addvar}">${addvar}</a> </address></div>`
+            strVar += `			<div class="ui divider"></div><div class="description">`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Net Patient Revenue </span> <span class= "right-float"><b>$ ${item.NET_PATIENT_REVENUE}B</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Net Income: </span> <span class= "right-float"><b>$ ${item.NET_INCOME} B</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Net Income Margin: </span> <span class= "right-float"><b>$ ${item.NET_INCOME_MARGIN} B</b></span> </div>`
+            strVar += `				<div class="ui divider"></div>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">No of Employed Physicians  </span> <span class= "right-float"><b>342</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">No of Affiliated OSUBs </span> <span class= "right-float"><b>${item.NO_OF_OSUBS}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">No of Affiliated Hospitals </span> <span class= "right-float"><b>${item.NO_OF_HOSPS}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">No of Affiliated SOCs </span> <span class= "right-float"><b>${item.NO_OF_SOCS}</b></span> </div>`
+            strVar += `				<div class="ui divider"></div>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Structure Segment: </span> <span class= "right-float"><b>${item.STRUCTURE_SEGMENT}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Patient Experience Segment: </span> <span class= "right-float"><b>${item.PATIENT_EXPERIENCE_SEGEMENT}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Quality Segment: </span> <span class= "right-float"><b>${item.QUALITY_SEGMENT}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Research Segment: </span> <span class= "right-float"><b>${item.RESEARCH_SEGEMENT}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Willingness to Partner Segment: </span> <span class= "right-float"><b>${item.WILLINGNESS_TO_PATNER_SEGMENT}</b></span> </div><br>`
+            strVar += `				<div style="font-size: ${dimens.sideBarContentFontSize};">Expression Segment: </span> <span class= "right-float"><b>${item.EXPRESSION_SEGMENT}</b></span> </div>`
+            strVar += `		</div>`
+            strVar += `</div>`
 
             return strVar
 		}
@@ -1129,12 +1146,12 @@ function drawOrganizationChart(params) {
             var y = d3.event.pageY;
             var x = d3.event.pageX;
             
-            if (x > attrs.width - 300) {
-                x -= 300 - (attrs.width - x);
+            if (x > dimens.chartWidth - 300) {
+                x -= 300 - (dimens.chartWidth - x);
             }
 
-            if (y > attrs.height - 300) {
-                y -= 300 - (attrs.height - y);
+            if (y > dimens.chartHeight - 300) {
+                y -= 300 - (dimens.chartHeight - y);
             }
 
             tooltip.style('top', (y + 20) + 'px')
@@ -1144,7 +1161,7 @@ function drawOrganizationChart(params) {
         function sideBarHandler(d) {
             var content = sideBarContent(d)
             if (selectedNodeId != "") {
-				d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.nodeStrokeWidth)
+				d3.select(selectedNodeId).attr("stroke-width", dimens.nodeStrokeWidth)
 	            d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
             }
 
@@ -1152,8 +1169,8 @@ function drawOrganizationChart(params) {
 	        selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
 
             d3.select('#detailsSideBar').html(content)
-			d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.selectedNodeStrokeWidth)
-            d3.select(selectedNodeId).attr("fill", nodeAttrs.selectedNodeBackground)
+			d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
+            d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
         }
 
         function tooltipOutHandler() {
@@ -1179,13 +1196,6 @@ function drawOrganizationChart(params) {
                 tooltip.style('opacity', '0').style('display', 'none');
             }
 		});
-
-		/*if(id) {
-			setTimeout(function () {
-				fitToScreen();
-			}, 1000);
-		}*/
-		
 	}
 
     function click(d) {
@@ -1535,17 +1545,11 @@ function drawOrganizationChart(params) {
     }
 
     function locate(id, recursive = true) {
-		console.log("Start Locate")
         var copy_object = _.cloneDeep(attrs.root)
 		expand(copy_object)
 		var temp = recursiveFind(copy_object, id,[]);
 
-		console.log(temp);
-
         var  final_path = Array.from(new Set(temp))
-        final_path.forEach(element => {
-             console.log("path",element)
-        });
         final_path.shift()
 
         if (attrs.root.children) {
@@ -1558,11 +1562,9 @@ function drawOrganizationChart(params) {
             locate: id
 		})
 		
-		console.log("End Locate")
-
 		if (selectedNodeId != "") {
 			d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
-			d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.nodeStroke)
+			d3.select(selectedNodeId).attr("stroke-width", colors.nodeStroke)
             d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
         }
 
@@ -1573,8 +1575,8 @@ function drawOrganizationChart(params) {
 		else {
 			selectedOriginalBackground = "#fff"
 		}
-        d3.select(selectedNodeId).attr("stroke-width", nodeAttrs.selectedNodeStrokeWidth)
-        d3.select(selectedNodeId).attr("fill", nodeAttrs.selectedNodeBackground)
+        d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
+        d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
 
         var elem = document.getElementById(selectedNodeId.replace('#', ''))
 		if (elem != null) {
@@ -1719,7 +1721,6 @@ function drawOrganizationChart(params) {
 		update(attrs.root);
         while(path.length > 0)
         {
-			console.log(path[0].ENTITY_NAME + '   ' + path[0].pageNo)
             node.children = node.kids.filter( kid => kid.pageNo == path[0].pageNo)
 			node = node.children.filter(next_node => next_node.uniqueIdentifier == path[0].uniqueIdentifier)[0]
 			expand(node)

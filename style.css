@@ -483,13 +483,11 @@ text {
 
 .node-group .entity-name {
   fill: #272727;
-  font-size: 12px;
   font-weight: bold
 }
 
 .node-group .emp-position-name {
   fill: #59525b;
-  font-size: 11px;
 }
 
 .node-group .emp-area {
@@ -500,7 +498,6 @@ text {
 .node-group .emp-count,
 .node-group .emp-count-icon {
   fill: #91a4a5;
-  font-size: 12px;
 }
 .dropdown-box {
   /* position: absolute; */

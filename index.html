@@ -26,30 +26,11 @@
 </head>
 
 <body translate="no">
-
-    <!-- <div class="dropdown-box">
-        <div class="ui fluid search selection dropdown">
-            <input type="hidden" name="country">
-            <i class="dropdown icon"></i>
-            <div class="default text">Select IDN</div>
-            <div class="menu">
-            </div>
-        </div>
-    </div> -->
     <div class="top-bar" id="navbar">
     	<div class="ui segment three column grid ui aligned inverted segment orange-bar" style="border-radius: 0em;" id= "filter-bar">
     		<div style="margin-top: 8px;">
-    			<h3>Customer Network Visualization</h3>
+    			<h3 style="font-size: 20px;">Customer Network Visualization</h3>
     		</div>
-            <!-- <div class="dropdown-box">
-                <div class="ui fluid search selection dropdown entity_name">
-                    <input type="hidden" name="country">
-                    <i class="dropdown icon"></i>
-                    <div class="default text">Select IDN</div>
-                    <div class="menu">
-                    </div>
-                </div>
-            </div> -->
             <div class="dropdown-box">
             	<div class="ui fluid search selection dropdown entity_name" style="max-height: 35px;">
             		<input type="hidden" name="country">
@@ -104,16 +85,6 @@
     	<div class="input-box">
     		<div class="close-button-wrapper" style="float: right;"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times"
     			aria-hidden="true"></i></div>
-<!--
-<div class="ui right labeled input" style="width:250px; height:100%;">
-  <input type="text" placeholder="Account Name">
-  <div class="ui dropdown label">
-    <i class="dropdown icon"></i>
-    <div class="entity-search-menu" id="searchEntityType">
-    </div>
-  </div>
-</div> -->
-
     			<div class="input-wrapper">
     				<input type="text" class="search-input" style="white-space: nowrap;" placeholder="Search by account name" />
     				<!--<div class="input-bottom-placeholder">By Account Name</div>-->
@@ -173,9 +144,9 @@
     				<i class="checkmark icon"></i>
     			</div>
     		</div>
-    	</div>
+		</div>
 
-    	<div class="legend1">
+    	<div  class=" legend1">
     		<div class="ui middle aligned  list">
     			<div class="item">
     				<div class="input-color">
@@ -336,6 +307,7 @@
 	
     <script type="text/javascript" src="script-v2.js"></script>
     <script>
+		window.onresize = function(){ location.reload(); }
     	var params = {
     		selector: "#svgChart",
     		dataLoadUrl: "https://gist.githubusercontent.com/venky18/3854ea4a96a4b249fc604443c81952a8/raw/f1a78e315491a6bac2065ec3b7382808b0d0ef26/random.json",
@@ -362,7 +334,9 @@
 				'medium': '#F9E79F',
 				'high': '#A8FFD8'
 			}
-    	}
+		}
+		
+		console.log('Width: ' + window.innerWidth)
 
 		d3.select('#lowCategory').style('background-color', params.colorCategory.low)
 		d3.select('#mediumCategory').style('background-color', params.colorCategory.medium)
@@ -385,16 +359,20 @@
 		d3.select('#collapseAllButton').style('top', "130px")
 		d3.select('#collapseAllButton').style('left', (window.innerWidth - 100) + "px")
 
-
-    	var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3)
+		var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3) < 300 ? (window.innerWidth - params.chartWidth - 3) : 300;
+		params.chartWidth = window.innerWidth - detailsSideBarWidth - 3;
 		var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
 
-    	d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
+		params.detailsSideBarWidth = detailsSideBarWidth;
+		
+		d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
     	d3.select('.details-side-bar').style('height', (window.innerHeight - navbarHeight) + "px")
 
+		console.log('Side bar: : ' + detailsSideBarWidth)
+		
     	d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
     	d3.select('.details-side-bar').style('position', "fixed")
-    	//d3.select('#svgChart').style('margin-left', detailsSideBarWidth + "px")
+    	d3.select('#svgChart').style('margin-left', detailsSideBarWidth + "px")
     	d3.select('#svgChart').style('top', "0px")
 
     	d3.select('.legend1').style('top', (window.innerHeight - 30) + "px")
@@ -541,7 +519,7 @@
             }
 
             //treeWrapper(0,'All');
-        })
+		})
     </script>
 </body>
 
