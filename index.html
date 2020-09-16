@@ -7,7 +7,6 @@
 	href="https://production-assets.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico" />
 	<title>IDN Hierarchy Chart </title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" /> -->
 	<link rel='stylesheet prefetch'
 	href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css'>
 	<link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Roboto'>
@@ -29,7 +28,7 @@
     <div class="top-bar" id="navbar">
     	<div class="ui segment three column grid ui aligned inverted segment orange-bar" style="border-radius: 0em;" id= "filter-bar">
     		<div style="margin-top: 8px;">
-    			<h3 style="font-size: 20px;">Customer Network Visualization</h3>
+    			<h3 id="applicationName" style="font-size: 20px;">Customer Network Visualization</h3>
     		</div>
             <div class="dropdown-box">
             	<div class="ui fluid search selection dropdown entity_name" style="max-height: 35px;">
@@ -64,10 +63,6 @@
     <button class="btn-action btn-search" onclick="params.funcs.search()">
     	<i class="search icon" style="color: white;"></i>
     	Search
-    </button>
-
-    <button class="btn-tableau" onclick="params.funcs.renderTableau()" hidden>
-    	Show Tableau
     </button>
 
     <div class="department-information">
@@ -146,7 +141,7 @@
     		</div>
 		</div>
 
-    	<div  class=" legend1">
+    	<div class="legend1">
     		<div class="ui middle aligned  list">
     			<div class="item">
     				<div class="input-color">
@@ -307,6 +302,11 @@
 	
     <script type="text/javascript" src="script-v2.js"></script>
     <script>
+		const urlParams = new URLSearchParams(window.location.search)
+		var entityName = (urlParams.has('entity'))? urlParams.get('entity') : 'Providence Saint Joseph Health';
+		
+		var colorBy = (urlParams.has('colorBy'))? urlParams.get('colorBy') : 'None';
+
 		window.onresize = function(){ location.reload(); }
     	var params = {
     		selector: "#svgChart",
@@ -336,8 +336,6 @@
 			}
 		}
 		
-		console.log('Width: ' + window.innerWidth)
-
 		d3.select('#lowCategory').style('background-color', params.colorCategory.low)
 		d3.select('#mediumCategory').style('background-color', params.colorCategory.medium)
 		d3.select('#highCategory').style('background-color', params.colorCategory.high)
@@ -367,8 +365,6 @@
 		
 		d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
     	d3.select('.details-side-bar').style('height', (window.innerHeight - navbarHeight) + "px")
-
-		console.log('Side bar: : ' + detailsSideBarWidth)
 		
     	d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
     	d3.select('.details-side-bar').style('position', "fixed")
@@ -411,7 +407,7 @@
 		document.getElementById('selectedColorBy').innerHTML = 'None';
 
     	var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
-		var ViewColorByCategory = ['None', 'Patient Revenue', '	Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
+		var ViewColorByCategory = ['None', 'Patient Revenue', 'Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
 
     	d3.json("HES_V1_V5_HIERARCHY.json", function (error, data) {
     		if (error) {
@@ -420,7 +416,6 @@
     		$('.ui.fluid.search.selection.dropdown.entity_name').dropdown({
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
-    				console.log('value is ' + value)
 					selectedEntity = value;
 					document.getElementById('selectedType').innerHTML = 'All';
 
@@ -434,7 +429,6 @@
     		$('.ui.fluid.search.selection.dropdown.entity_type').dropdown({
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
-    				console.log('value is ' + text)
 					selected_org_type = text;
 					document.getElementById('selectedColorBy').innerHTML = 'None';
 
@@ -448,7 +442,6 @@
 			$('.ui.fluid.search.selection.dropdown.view_color').dropdown({
     			fullTextSearch: true,
     			onChange: function (value, text, $selectedItem) {
-    				console.log('color is ' + value)
 					selected_view_color = value;
 
 					if (value == 0) {
@@ -475,7 +468,6 @@
             $('.ui.fluid.search.selection.dropdown.entity_name').dropdown('set selected', 0);
             
             for (var i = 0; i < OrgTypes.length; i++) {
-                // console.log(data[i])
                 $('.dropdown.entity_type .menu')
                 .append('<div class="item" data-value=' + i + '> ' + OrgTypes[i] + '</div>');
             }
@@ -492,14 +484,12 @@
 
             function treeWrapper(entity_name,entity_type, color_by) {
             	d3.selectAll("svg").remove();
-				console.log('Name: ' + entity_name)
                 // debugger;
                 var tempData = data[entity_name];
 				params.data = tempData;
 				params.dataIndex = entity_name;
 				params.entityType = entity_type;
 				params.colorBy = color_by;
-				console.log('color: : ' + color_by)
 				drawOrganizationChart(params);
             }
 
@@ -507,17 +497,20 @@
             var children = d3.select("#entityNameMenu").selectAll('div')[0];
 
             for (var i=0; i<entityCount; i+=1) {
-            	if (children[i].textContent.toLowerCase().includes('Providence Saint Joseph Health'.toLowerCase())) {
-					document.getElementById('selectedEntity').innerHTML = 'Providence Saint Joseph Health';
+            	if (children[i].textContent.toLowerCase().includes(entityName.toLowerCase())) {
+					document.getElementById('selectedEntity').innerHTML = entityName;//'Providence Saint Joseph Health';
 					selected_org_type = 'All';
-					selected_view_color = 0;
-					treeWrapper(i,'All', 0);
+					selected_view_color = ViewColorByCategory.findIndex(getIndex);
+					treeWrapper(i,'All', selected_view_color);
 					selectedEntity = i;
             		d3.select('#selectedEntity').text(children[i].textContent);
             			break;
             	}
             }
 
+			function getIndex(element) {
+  				return element == colorBy;
+			}
             //treeWrapper(0,'All');
 		})
     </script>

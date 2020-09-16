@@ -15,15 +15,14 @@ function drawOrganizationChart(params) {
 	params.funcs.fitToScreen = fitToScreen;
 	params.funcs.collapseAll = collapseAll;
 	params.funcs.expandAll = expandAll;
-	params.funcs.renderTableau = renderTableau;
 
 	var colorCategory = params.colorCategory;
 
-    var OrgTypesLevel1 = ['IDN'];
-    var OrgTypesLevel2 = ['IDN_Filled', 'OSUB'];
-    var OrgTypesLevel3 = ['IDN_Filled', 'HOSP', 'OSUB_Filled'];
-    var OrgTypesLevel4 = ['CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT', 'HOSP_Filled'];
-    var OrgTypesLevel5 = ['OUTLET'];
+    // var OrgTypesLevel1 = ['IDN'];
+    // var OrgTypesLevel2 = ['IDN_Filled', 'OSUB'];
+    // var OrgTypesLevel3 = ['IDN_Filled', 'HOSP', 'OSUB_Filled'];
+    // var OrgTypesLevel4 = ['CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT', 'HOSP_Filled'];
+    // var OrgTypesLevel5 = ['OUTLET'];
 	var PAGINATION = 3;
 	
 	var OrgTypeLevel = {
@@ -47,7 +46,9 @@ function drawOrganizationChart(params) {
 		'HMHLT' : 4,
 		'HOSP_Filled' : 4,
 		'OUTLET' : 5
-	}
+    }
+    
+    var OrgTypeImagePath = ['images/IDN_B.png', 'images/OSUB_B.png', 'images/Hospital_B.png', 'images/SOC_B.png', 'images/OUTLET_B.png', '']
 
 	var selectedEntityLevel = OrgTypeLevel[params.entityType];
     var selectedNodeId = "";
@@ -196,11 +197,12 @@ function drawOrganizationChart(params) {
         return a.parent == b.parent ? 1 : 1.15;
     });
 
-    function drawLink(s, t) {
-        const x = s.x + dimens.nodeWidth / 2;
-        const y = s.y + dimens.nodeHeight / 2;
-        const ex = t.x + dimens.nodeWidth / 2;
-        const ey = t.y + dimens.nodeHeight / 2;
+    // Draws links from source node to destination node
+    function drawLink(source, target) {
+        const x = source.x + dimens.nodeWidth / 2;
+        const y = source.y + dimens.nodeHeight / 2;
+        const ex = target.x + dimens.nodeWidth / 2;
+        const ey = target.y + dimens.nodeHeight / 2;
 
         let xrvs = ex - x < 0 ? -1 : 1;
         let yrvs = ey - y < 0 ? -1 : 1;
@@ -685,6 +687,7 @@ function drawOrganizationChart(params) {
         var nodeGroup = nodeEnter.append("g")
             .attr("class", "node-group")            
 
+        // Add parent rectangle to the node
         nodeGroup.append("rect")
             .attr("width", dimens.nodeWidth)
             .attr("height", dimens.nodeHeight)
@@ -729,7 +732,7 @@ function drawOrganizationChart(params) {
                 outCircle(node);
 			});
 			
-
+        // Add entity name text to the node
         nodeGroup.append("text")
         	.attr('id', function(d) {
             	return ('N' + d.uniqueIdentifier +"name");
@@ -745,6 +748,7 @@ function drawOrganizationChart(params) {
             })
             .call(wrap, (200 * dimens.nodeWidth) / 270);
 
+        // Add entity type to the node
         nodeGroup.append("text")
             .attr("x", dimens.nodeTextLeftMargin)
             .attr("y", dimens.nodeEmpEntityNameTopmargin)
@@ -799,6 +803,7 @@ function drawOrganizationChart(params) {
             return position;
 		})
 
+        // Add children count icon to the node
         nodeGroup.append("text")
             .attr("x", dimens.nodeTextLeftMargin)
             .attr("y", dimens.nodeEmpCountTopMargin)
@@ -810,6 +815,7 @@ function drawOrganizationChart(params) {
                 if (d.children || d._children) return attrs.userIcon;
             });
 
+        // Add children count to the node
         nodeGroup.append("text")
             .attr("x", dimens.nodeTextLeftMargin + ((13 * dimens.nodeWidth) / 270))
             .attr("y", dimens.nodeEmpCountTopMargin)
@@ -822,6 +828,7 @@ function drawOrganizationChart(params) {
                 return d.kids.length }                
             })
 
+        // Add the entity type icon to the node
         nodeGroup.append("defs").append("svg:clipPath")
             .attr("id", "clip")
             .append("svg:rect")
@@ -843,6 +850,7 @@ function drawOrganizationChart(params) {
                 
                 return CheckOrgTypeReturnImage(v)
             })
+
         // Transition nodes to their new position.
         var nodeUpdate = node.transition()
             .duration(attrs.duration)
@@ -1112,25 +1120,25 @@ function drawOrganizationChart(params) {
 		// Returns HTML script for tooltip
         function tooltipContent(item) {
             var strVar = '';
-            strVar += '<div class="ui card">'
-            strVar += '		<div class="content">'
-            strVar += '			<img class="right floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">'
-            strVar += '			<div class="header">' + toTitleCase(item.ENTITY_NAME) + '</div>'
-            strVar += '			<div class="meta">' + item.ENTITY_ORG_TYPE + '</div>'
-            strVar += '			<div class="">' + item.ENTITY_ADDR1 + ", " + item.ENTITY_STATE + ", " + item.ENTITY_CITY + ", " + item.ENTITY_ZIP + '</div>'
-            strVar += '			<br>'
-            strVar += '			<div class="">' + "Relationship" + ": " + item.REL_TYPE + "-" + item.REL_SUBTYPE + '</div>'
-            strVar += '			<br>'
-            strVar += '			<div class="">' + "Rep Access" + ": " + item.ENTITY_SREP_ACCESS + '</div>'
-            strVar += '		</div>'
-            strVar += '		<div class="extra content">'
-            strVar += '			<div class="ui small horizontal list">'
-            strVar += '			<div class="item"><div class="header">' + item.NO_OF_HOSPS + " HOSPS" + '</div></div>'
-            strVar += '			<div class="item"><div class="header">' + item.NO_OF_OUTLETS + " OUTLETS" + '</div></div>'
-            strVar += '			<div class="item"><div class="header">' + item.NO_OF_SOCS + " SOCS" + '</div></div>'
-            strVar += '			<div class="item"><div class="header">' + item.NO_OF_OSUBS + " OSUBS" + '</div></div>'
-            strVar += '		</div>'
-            strVar += '</div>'
+            strVar += `<div class="ui card">`
+            strVar += `		<div class="content">`
+            strVar += `			<img class="right floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">`
+            strVar += `			<div class="header">${toTitleCase(item.ENTITY_NAME)}</div>`
+            strVar += `			<div class="meta">${item.ENTITY_ORG_TYPE}</div>`
+            strVar += `			<div class="">${item.ENTITY_ADDR1}, ${item.ENTITY_STATE}, ${item.ENTITY_CITY}, ${item.ENTITY_ZIP}</div>`
+            strVar += `			<br>`
+            strVar += `			<div class="">Relationship: ${item.REL_TYPE}-${item.REL_SUBTYPE}</div>`
+            strVar += `			<br>`
+            strVar += `			<div class="">Rep Access: ${item.ENTITY_SREP_ACCESS}</div>`
+            strVar += `		</div>`
+            strVar += `		<div class="extra content">`
+            strVar += `			<div class="ui small horizontal list">`
+            strVar += `			<div class="item"><div class="header">${item.NO_OF_HOSPS} HOSPS</div></div>`
+            strVar += `			<div class="item"><div class="header">${item.NO_OF_OUTLETS} OUTLETS</div></div>`
+            strVar += `			<div class="item"><div class="header">${item.NO_OF_SOCS} SOCS</div></div>`
+            strVar += `			<div class="item"><div class="header">${item.NO_OF_OSUBS} OSUBS</div></div>`
+            strVar += `		</div>`
+            strVar += `</div>`
 
             return strVar;
         }
@@ -1277,40 +1285,31 @@ function drawOrganizationChart(params) {
         }
     }
 
+    // Return the path of the entity type icons
     function CheckOrgTypeReturnImage(v) {
-        if (OrgTypesLevel1.includes(v.ENTITY_ORG_TYPE)) {
-            return 'images/IDN_B.png';
-        } else if (OrgTypesLevel2.includes(v.ENTITY_ORG_TYPE)) {
-            return 'images/OSUB_B.png';
-        } else if (OrgTypesLevel3.includes(v.ENTITY_ORG_TYPE)) {
-            return 'images/Hospital_B.png';
-        } else if (OrgTypesLevel4.includes(v.ENTITY_ORG_TYPE)) {
-            return 'images/SOC_B.png';
-        } else if (OrgTypesLevel5.includes(v.ENTITY_ORG_TYPE)) {
-            return 'images/OUTLET_B.png';
-        }
+        return (OrgTypeImagePath[OrgTypeLevel[v.ENTITY_ORG_TYPE] - 1])
     }
 
     function reflectResults(results) {
         var htmlStringArray = results.map(function (result) {
-            var strVar = "";
-            strVar += "         <div class=\"list-item\" style=\"cursor: pointer;\" onclick='params.funcs.locate(" + result.uniqueIdentifier + ")'>";
-            strVar += "          <a >";
-            strVar += "            <div class=\"image-wrapper\">";
-            strVar += "              <img class=\"image\" src=\"" + CheckOrgTypeReturnImage(result) + "\"\/>";
-            strVar += "            <\/div>";
-            strVar += "            <div class=\"description\">";
-            strVar += "              <p class=\"name\">" + toTitleCase(result.ENTITY_NAME) + "<\/p>";
-            strVar += "               <p class=\"entity-type\">" + result.ENTITY_ORG_TYPE + "<\/p>";
+            var strVar = ``;
+            strVar += `         <div class="list-item" style="cursor: pointer;" onclick='params.funcs.locate(${result.uniqueIdentifier})'>`;
+            strVar += `          <a>`;
+            strVar += `            <div class="image-wrapper">`;
+            strVar += `              <img class="image" src="${CheckOrgTypeReturnImage(result)}"/>`;
+            strVar += `            </div>`;
+            strVar += `            <div class="description">`;
+            strVar += `              <p class="name">${toTitleCase(result.ENTITY_NAME)}</p>`;
+            strVar += `               <p class="entity-type">${result.ENTITY_ORG_TYPE}</p>`;
 
             if (result.ENTITY_ADDR1 != null) {
-                strVar += "               <p class=\"area\">" + toTitleCase(result.ENTITY_ADDR1) + ",\n" + toTitleCase(result.ENTITY_CITY) + "<\/p>";
+                strVar += `               <p class="area">${toTitleCase(result.ENTITY_ADDR1)},\n${toTitleCase(result.ENTITY_CITY)}</p>`;
             }
-            strVar += "            <\/div>";
-            strVar += "            <div class=\"buttons\">";
-            strVar += "            <\/div>";
-            strVar += "          <\/a>";
-            strVar += "        <\/div>";
+            strVar += `            </div>`;
+            strVar += `            <div class="buttons">`;
+            strVar += `            </div>`;
+            strVar += `          </a>`;
+            strVar += `        </div>`;
 
             return strVar;
         });
@@ -1726,9 +1725,5 @@ function drawOrganizationChart(params) {
 			expand(node)
 			path.shift()
         }
-	}
-	
-	function renderTableau() {
-		window.location.href="testTableau.html";
 	}
 }
