@@ -12,8 +12,6 @@ function drawOrganizationChart(params) {
     params.funcs.toggleFullScreen = toggleFullScreen;
     params.funcs.locate = locate;
 
-    // connstant needs to be updated as data changes
-    //
     var OrgTypesLevel1 = ['IDN'];
     var OrgTypesLevel2 = ['IDN_Filled', 'OSUB'];
     var OrgTypesLevel3 = ['IDN_Filled', 'HOSP', 'OSUB_Filled'];

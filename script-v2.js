@@ -125,6 +125,8 @@ function drawOrganizationChart(params) {
 	colors.filledNodeBackground = '#dedede';
     colors.unfilledNodeBackground = '#ffffff';
     
+    document.getElementById('legend').innerHTML = '';
+
     // Handle legend contents
     for (var key in params.relationColors) {
         var style = `style="margin-left: 10px; font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`
