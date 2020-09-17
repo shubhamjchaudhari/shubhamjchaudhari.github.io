@@ -22,6 +22,7 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
+	<script src="tableau-extensions-1.latest.js"></script>
 </head>
 
 <body translate="no">
@@ -141,6 +142,8 @@
     		</div>
 		</div>
 
+		<ul class="legend" id="legend"></ul>
+<!--
     	<div class="legend1">
     		<div class="ui middle aligned  list">
     			<div class="item">
@@ -246,7 +249,7 @@
     		</div>
     	</div>
     </div>
-
+-->
 	    <div class="legendB1">
     		<div class="ui middle aligned  list">
     			<div class="item">
@@ -333,9 +336,21 @@
 				'low': '#F5B7B1',
 				'medium': '#F9E79F',
 				'high': '#A8FFD8'
+			},
+			relationColors: {
+				"Filled": "slategrey",
+        		"Owned": "blue",
+        		"Affiliated Purchasing": "magenta",
+				"Managed": "red",
+				"Leased": "orange",
+				"OWNERSHIP": "purple",
+				"DEPARTMENT": "forestgreen",
+				"OUTLET": "black"
 			}
 		}
-		
+
+		//append('<li style="margin-left: 20px;"><span class="awesome"></span> Awesome</li>')
+
 		d3.select('#lowCategory').style('background-color', params.colorCategory.low)
 		d3.select('#mediumCategory').style('background-color', params.colorCategory.medium)
 		d3.select('#highCategory').style('background-color', params.colorCategory.high)
@@ -371,23 +386,23 @@
     	d3.select('#svgChart').style('margin-left', detailsSideBarWidth + "px")
     	d3.select('#svgChart').style('top', "0px")
 
-    	d3.select('.legend1').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend2').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend3').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend4').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend5').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend6').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend7').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legend8').style('top', (window.innerHeight - 30) + "px")
+    	d3.select('.legend').style('top', (window.innerHeight - 50) + "px")
+    	// d3.select('.legend2').style('top', (window.innerHeight - 30) + "px")
+    	// d3.select('.legend3').style('top', (window.innerHeight - 30) + "px")
+    	// d3.select('.legend4').style('top', (window.innerHeight - 30) + "px")
+    	// d3.select('.legend5').style('top', (window.innerHeight - 30) + "px")
+    	// d3.select('.legend6').style('top', (window.innerHeight - 30) + "px")
+    	// d3.select('.legend7').style('top', (window.innerHeight - 30) + "px")
+    	// d3.select('.legend8').style('top', (window.innerHeight - 30) + "px")
 
-    	d3.select('.legend1').style('left', (detailsSideBarWidth + 10) + "px")
-    	d3.select('.legend2').style('left', (detailsSideBarWidth + 100) + "px")
-    	d3.select('.legend3').style('left', (detailsSideBarWidth + 200) + "px")
-    	d3.select('.legend4').style('left', (detailsSideBarWidth + 310) + "px")
-    	d3.select('.legend5').style('left', (detailsSideBarWidth + 420) + "px")
-    	d3.select('.legend6').style('left', (detailsSideBarWidth + 520) + "px")
-    	d3.select('.legend7').style('left', (detailsSideBarWidth + 650) + "px")
-    	d3.select('.legend8').style('left', (detailsSideBarWidth + 775) + "px")
+    	d3.select('.legend').style('left', (detailsSideBarWidth) + "px")
+    	// d3.select('.legend2').style('left', (detailsSideBarWidth + 100) + "px")
+    	// d3.select('.legend3').style('left', (detailsSideBarWidth + 200) + "px")
+    	// d3.select('.legend4').style('left', (detailsSideBarWidth + 310) + "px")
+    	// d3.select('.legend5').style('left', (detailsSideBarWidth + 420) + "px")
+    	// d3.select('.legend6').style('left', (detailsSideBarWidth + 520) + "px")
+    	// d3.select('.legend7').style('left', (detailsSideBarWidth + 650) + "px")
+    	// d3.select('.legend8').style('left', (detailsSideBarWidth + 775) + "px")
 
     	d3.select('.legendB1').style('top', (window.innerHeight - 30) + "px")
     	d3.select('.legendB2').style('top', (window.innerHeight - 30) + "px")
@@ -398,6 +413,7 @@
 		//d3.select('#fitToScreenButton').style('left', (detailsSideBarWidth + 25) + "px")
 
     	function toTitleCase(str) {
+			str = str.toLowerCase()
     		return str.replace(/(?:^|\s)\w/g, function(match) {
     			return match.toUpperCase();
     		});

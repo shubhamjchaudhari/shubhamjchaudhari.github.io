@@ -59,7 +59,8 @@ function drawOrganizationChart(params) {
     var node_to_rename = null;
     var circularRemovedNode;
 
-    var RelationSubtypeColors = {
+    var RelationSubtypeColors = params.relationColors;
+    /*{
         "Filled": "slategrey",
         "Owned": "blue",
         "Affiliated Purchasing": "magenta",
@@ -68,7 +69,7 @@ function drawOrganizationChart(params) {
         "OWNERSHIP": "purple",
         "DEPARTMENT": "forestgreen",
         "OUTLET": "black"
-    };
+    };*/
 
     var attrs = {
         EXPAND_SYMBOL: '+',
@@ -122,8 +123,17 @@ function drawOrganizationChart(params) {
 	colors.nodeStroke = 'teal';
 	colors.selectedNodeBackground = '#ffeeff';
 	colors.filledNodeBackground = '#dedede';
-	colors.unfilledNodeBackground = '#ffffff'
-	
+    colors.unfilledNodeBackground = '#ffffff';
+    
+    // Handle legend contents
+    for (var key in params.relationColors) {
+        var style = `style="margin-left: 10px; font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`
+        
+        if (key=='Filled') style = `style=" font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`;
+        
+        document.getElementById('legend').innerHTML += `<li ${style}><span style="background-color: ${params.relationColors[key]}; height:5px; width: 15px; margin-top: 7px; margin-left: 5px;"></span> ${toTitleCase(key)}</li>`
+    }
+
     var selectedNode = null;
 	var draggingNode = null;
 	
@@ -1190,9 +1200,9 @@ function drawOrganizationChart(params) {
         }
 
         nodeGroup.on('click', sideBarHandler);
-        nodeGroup.on('mouseover', tooltipHoverHandler);
-        nodeGroup.on('mouseout', tooltipOutHandler);
-        nodeGroup.on('contextmenu', d3.contextMenu(menu));
+        //nodeGroup.on('mouseover', tooltipHoverHandler);
+        //nodeGroup.on('mouseout', tooltipOutHandler);
+        //nodeGroup.on('contextmenu', d3.contextMenu(menu));
 
         function equalToEventTarget() {
             return this == d3.event.target;
