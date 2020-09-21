@@ -692,13 +692,13 @@ vertical-align: middle;
 }
 
 .svg-button {
-	background-color: #dfdfdf; /* Blue background */
-	border: none; /* Remove borders */
-	color: #909090; /* White text */
-	font-size: 16px; /* Set a font size */
-	cursor: pointer; /* Mouse pointer on hover */
-	width: 30px;
-	height: 30px;
+	background-color: #dfdfdf;
+	border: none;
+	color: #909090;
+  font-size: 20px;
+  cursor: pointer;
+	width: 40px;
+	height: 40px;
 	border: 1px solid black;
   }
   
@@ -711,4 +711,4 @@ vertical-align: middle;
 /* basic positioning */
 .legend { list-style: none; position: absolute; }
 .legend li { float: left; margin-right: 10px; }
-.legend span { border: 1px solid #ccc; float: right; width: 12px; height: 12px; margin: 2px; vertical-align: middle; }
+.legend span { border: 1px solid #ccc; float: right; width: 12px; height: 10px; margin: 2px; vertical-align: middle; }

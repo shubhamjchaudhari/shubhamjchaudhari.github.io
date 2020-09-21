@@ -1,91 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-	<meta charset="UTF-8">
-	<link rel="shortcut icon" type="image/x-icon"
-	href="https://production-assets.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico" />
-	<title>IDN Hierarchy Chart </title>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel='stylesheet prefetch'
-	href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css'>
-	<link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Roboto'>
-	<link rel="stylesheet" type="text/css" href="style.css">
-	<script src="https://d3js.org/d3.v3.min.js"></script>
-	<script
-	src="https://code.jquery.com/jquery-3.5.1.min.js"
-	integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
-	crossorigin="anonymous"></script>
-	<script src="d3-context-menu.js"></script>
+	<head>
+		<meta charset="UTF-8">
+		<link rel="shortcut icon" type="image/x-icon" href="https://production-assets.codepen.io/assets/favicon/favicon-8ea04875e70c4b0bb41da869e81236e54394d63638a1ef12fa558a4a835f1164.ico" />
 	
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
+		<title>IDN Hierarchy Chart </title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		
+		<link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.css'>
+	
+		<link rel='stylesheet prefetch' href='https://fonts.googleapis.com/css?family=Roboto'>
+		
+		<link rel="stylesheet" type="text/css" href="style.css">
+	
+		<script src="https://d3js.org/d3.v3.min.js"></script>
+	
+		<script
+			src="https://code.jquery.com/jquery-3.5.1.min.js"
+			integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+			crossorigin="anonymous"></script>
+	
+		<script src="d3-context-menu.js"></script>
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css">
 
-	<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
-	<script src="tableau-extensions-1.latest.js"></script>
-</head>
+		<script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.19/lodash.min.js"></script>
+		<script src="./tableau.extensions.1.latest.js"></script>
+	</head>
 
-<body translate="no">
-    <div class="top-bar" id="navbar">
-    	<div class="ui segment three column grid ui aligned inverted segment orange-bar" style="border-radius: 0em;" id= "filter-bar">
-    		<div style="margin-top: 8px;">
-    			<h3 id="applicationName" style="font-size: 20px;">Customer Network Visualization</h3>
-    		</div>
-            <div class="dropdown-box">
-            	<div class="ui fluid search selection dropdown entity_name" style="max-height: 35px;">
-            		<input type="hidden" name="country">
-            		<i class="dropdown icon"></i>
-            		<div class="default text" id="selectedEntity" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">Select IDN</div>
-            		<div class="menu" id="entityNameMenu">
+	<body translate="no">
+    	<div class="top-bar" id="navbar" hidden>
+    		<div class="ui segment three column grid ui aligned inverted segment orange-bar" style="border-radius: 0em;" id= "filter-bar">
+    			<div style="margin-top: 8px;">
+    				<h3 id="applicationName" style="font-size: 20px;">Customer Network Visualization</h3>
+    			</div>
+				
+				<div class="dropdown-box">
+            		<div class="ui fluid search selection dropdown entity_name" style="max-height: 35px;">
+            			<input type="hidden" name="country">
+            				<i class="dropdown icon"></i>
+            			<div class="default text" id="selectedEntity" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">Select IDN</div>
+            			<div class="menu" id="entityNameMenu"></div>
             		</div>
             	</div>
-            </div>
-            <div class="dropdown-box3">
-            	<div class="ui fluid search selection dropdown entity_type" style="width: 150px; max-height: 35px;">
-            		<input type="hidden" name="country">
-            		<i class="dropdown icon"></i>
-            		<div class="default text" id="selectedType" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">Entity Types</div>
-            		<div class="menu">
+			
+				<div class="dropdown-box3">
+            		<div class="ui fluid search selection dropdown entity_type" style="width: 150px; max-height: 35px;">
+            			<input type="hidden" name="country">
+            				<i class="dropdown icon"></i>
+            			<div class="default text" id="selectedType" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">Entity Types</div>
+            			<div class="menu"></div>
             		</div>
             	</div>
-            </div>
-            <div class="dropdown-box4">
-            	<div class="ui fluid search selection dropdown view_color" style="width: 200px; max-height: 35px;">
-            		<input type="hidden" name="country">
-            		<i class="dropdown icon"></i>
-            		<div class="default text" id="selectedColorBy" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">View colors by</div>
-            		<div class="menu">
+			
+				<div class="dropdown-box4">
+            		<div class="ui fluid search selection dropdown view_color" style="width: 200px; max-height: 35px;">
+            			<input type="hidden" name="country">
+            				<i class="dropdown icon"></i>
+            			<div class="default text" id="selectedColorBy" style="width: 100%; white-space: nowrap; overflow: hidden; text-overflow: clip;">View colors by</div>
+            			<div class="menu"></div>
             		</div>
             	</div>
-            </div>
+			</div>
+    	</div>
+	
+		<button class="btn-action btn-search" onclick="params.funcs.search()">
+    		<i class="search icon" style="color: white;"></i>
+    		Search
+    	</button>
 
-        </div>
-    </div>
-    <button class="btn-action btn-search" onclick="params.funcs.search()">
-    	<i class="search icon" style="color: white;"></i>
-    	Search
-    </button>
-
-    <div class="department-information">
-    	<div class="dept-name">
-    		dept name
+    	<div class="department-information">
+    		<div class="dept-name">dept name</div>
+    		<div class="dept-emp-count">dept description test, this is department description</div>
+    		<div class="dept-description">dept description test, this is department description</div>
     	</div>
-    	<div class="dept-emp-count">
-    		dept description test, this is department description
-    	</div>
-    	<div class="dept-description">
-    		dept description test, this is department description
-    	</div>
-    </div>
-    <div class="user-search-box" style="z-index: 100">
-    	<div class="input-box">
-    		<div class="close-button-wrapper" style="float: right;"><i onclick="params.funcs.closeSearchBox()" class="fa fa-times"
-    			aria-hidden="true"></i></div>
-    			<div class="input-wrapper">
+	
+		<div class="user-search-box" style="z-index: 100">
+    		<div class="input-box">
+				<div class="close-button-wrapper" style="float: right;">
+					<i onclick="params.funcs.closeSearchBox()" class="fa fa-times" aria-hidden="true"></i>
+				</div>
+				
+				<div class="input-wrapper">
     				<input type="text" class="search-input" style="white-space: nowrap;" placeholder="Search by account name" />
     			</div>
     		</div>
-    		<div class="result-box"  id="searchbar">
+			
+			<div class="result-box"  id="searchbar">
     			<div class="result-header" id="searchResultCount"> RESULTS </div>
     			<div class="result-list">
     				<div class="buffer"></div>
@@ -128,12 +131,10 @@
     					<input type="text" id="createChildName" placeholder="Give a new name">
     				</div>
     			</div>
-
     		</div>
-    		<div class="actions">
-    			<div class="ui black deny button" onclick="params.funcs.close_rename_node_modal()">
-    				No
-    			</div>
+			
+			<div class="actions">
+    			<div class="ui black deny button" onclick="params.funcs.close_rename_node_modal()">No</div>
     			<div class="ui positive right labeled icon button" onclick="params.funcs.create_node()">
     				Yes, create node
     				<i class="checkmark icon"></i>
@@ -142,389 +143,398 @@
 		</div>
 
 		<ul class="legend" id="legend"></ul>
-<!--
-    	<div class="legend1">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: slateGray ;"></div>
-    				</div>
-    				<div class="content">
-    					Filled
-    				</div>
-    			</div>
-    		</div>
-    	</div>
+		<ul class="legend" id="viewColorByLegend"></ul>
 
-    	<div class=" legend2">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: blue;"></div>
-    				</div>
+    	<div class="details-side-bar" id="detailsSideBar" style="border: 2px solid teal"></div>
 
-    				<div class="content">
-    					Owned
-    				</div>
-    			</div>
-    		</div>
-    	</div>
+		<div id="svgChart" style="float: right;"></div>
 
-    	<div class=" legend3">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: magenta;"></div>
-    				</div>
-    				<div class="content">
-    					Affiliated
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-
-    	<div class=" legend4">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: red;"></div>
-    				</div>
-    				<div class="content">
-    					Managed
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-
-    	<div class=" legend5">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: orange;"></div>
-    				</div>
-    				<div class="content">
-    					Leased
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-
-    	<div class=" legend6">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: purple ;"></div>
-    				</div>
-    				<div class="content">
-    					Ownership
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-
-    	<div class=" legend7">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: forestgreen;"></div>
-    				</div>
-    				<div class="content">
-    					Department
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-
-    	<div class="legend8">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box" style="background-color: black;"></div>
-    				</div>
-    				<div class="content">
-    					Outlet
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-    </div>-->
-	    <div class="legendB1">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box-b" id="lowCategory" style="background-color: black;"></div>
-    				</div>
-    				<div class="content">
-    					Low
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-    </div>
-
-	    <div class="legendB2">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box-b" id="mediumCategory" style="background-color: black;"></div>
-    				</div>
-    				<div class="content">
-    					Medium
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-    </div>
-
-	    <div class="legendB3">
-    		<div class="ui middle aligned  list">
-    			<div class="item">
-    				<div class="input-color">
-    					<div class="color-box-b" id="highCategory" style="background-color: black;"></div>
-    				</div>
-    				<div class="content">
-    					High
-    				</div>
-    			</div>
-    		</div>
-    	</div>
-    </div>
-
-    <div class="details-side-bar" id="detailsSideBar" style="border: 2px solid teal">
+		<div id="svgButton">
+			<button id="fitToScreenButton" type="button" style="position: absolute;" onclick="params.funcs.fitToScreen()" class="svg-button"><i class="fa fa-arrows"></i></button>
+			<button id="expandAllButton" type="button" style="position: absolute;" onclick="params.funcs.expandAll()" class="svg-button"><i class="fa fa-plus-square"></i></button>
+			<button id="collapseAllButton" type="button" style="position: absolute;" onclick="params.funcs.collapseAll()" class="svg-button"><i class="fa fa-minus-square"></i></button>
+			<button id="searchButton" type="button" style="position: absolute;" onclick="params.funcs.search()" class="svg-button"><i class="fa fa-search"></i></button>
+		</div>
 	
-    </div>
-    <div id="svgChart" style="float: right;">
-
-    </div>
-
-	<button id="fitToScreenButton" type="button" style="position: absolute;" onclick="params.funcs.fitToScreen()" class="svg-button"><i class="fa fa-arrows"></i></button>
-	<button id="expandAllButton" type="button" style="position: absolute;" onclick="params.funcs.expandAll()" class="svg-button"><i class="fa fa-plus-square"></i></button>
-	<button id="collapseAllButton" type="button" style="position: absolute;" onclick="params.funcs.collapseAll()" class="svg-button"><i class="fa fa-minus-square"></i></button>
+		<script type="text/javascript" src="script-v2.js"></script>
 	
-    <script type="text/javascript" src="script-v2.js"></script>
-    <script>
-		const urlParams = new URLSearchParams(window.location.search)
-		var entityName = (urlParams.has('entity'))? urlParams.get('entity') : 'Providence Saint Joseph Health';
-		
-		var colorBy = (urlParams.has('colorBy'))? urlParams.get('colorBy') : 'None';
-
-		window.onresize = function(){ location.reload(); }
-    	var params = {
-    		selector: "#svgChart",
-    		dataLoadUrl: "https://gist.githubusercontent.com/venky18/3854ea4a96a4b249fc604443c81952a8/raw/f1a78e315491a6bac2065ec3b7382808b0d0ef26/random.json",
-    		chartWidth: (window.innerWidth - 40) * 0.83,
-    		chartHeight: window.innerHeight - 110,
-    		funcs: {
-    			showMySelf: null,
-    			search: null,
-    			closeSearchBox: null,
-    			clearResult: null,
-    			findInTree: null,
-    			reflectResults: null,
-    			departmentClick: null,
-    			back: null,
-    			toggleFullScreen: null,
-    			locate: null,
-    			download: null,
-				collapseAll: null
-    		},
-			entityType: '',
-    		data: null,
-			colorCategory: {
-				'low': '#F5B7B1',
-				'medium': '#F9E79F',
-				'high': '#A8FFD8'
-			},
-			relationColors: {
-				"Filled": "slategrey",
-        		"Owned": "blue",
-        		"Affiliated Purchasing": "magenta",
-				"Managed": "red",
-				"Leased": "orange",
-				"OWNERSHIP": "purple",
-				"DEPARTMENT": "forestgreen",
-				"OUTLET": "black"
+		<script>
+			window.onresize = function(){ location.reload(); }
+    	
+			var params = {
+    			selector: "#svgChart",
+    			dataLoadUrl: "https://gist.githubusercontent.com/venky18/3854ea4a96a4b249fc604443c81952a8/raw/f1a78e315491a6bac2065ec3b7382808b0d0ef26/random.json",
+    			chartWidth: (window.innerWidth - 40) * 0.83,
+    			chartHeight: window.innerHeight - 50,
+    			funcs: {
+    				showMySelf: null,
+    				search: null,
+    				closeSearchBox: null,
+    				clearResult: null,
+    				findInTree: null,
+    				reflectResults: null,
+    				departmentClick: null,
+    				back: null,
+    				toggleFullScreen: null,
+    				locate: null,
+    				download: null,
+					collapseAll: null
+    			},
+				entityType: '',
+    			data: null,
+				colorCategory: {
+					'low': '#F5B7B1',
+					'medium': '#F9E79F',
+					'high': '#A8FFD8'
+				},
+				relationColors: {
+					"Filled": "slategrey",
+        			"Owned": "blue",
+        			"Affiliated Purchasing": "magenta",
+					"Managed": "red",
+					"Leased": "orange",
+					"OWNERSHIP": "purple",
+					"DEPARTMENT": "forestgreen",
+					"OUTLET": "black"
+				}
 			}
-		}
 
-		d3.select('#lowCategory').style('background-color', params.colorCategory.low)
-		d3.select('#mediumCategory').style('background-color', params.colorCategory.medium)
-		d3.select('#highCategory').style('background-color', params.colorCategory.high)
+			var requiredDataSourceName = '';
+			var selectedEntityName = '';
+			var selectedEntityType = '';
+			var dataSource = null;
+			var viewColorBy = 0;
 
-		d3.select('.legendB1').style('display', 'none')
-		d3.select('.legendB2').style('display', 'none')
-		d3.select('.legendB3').style('display', 'none')
+			d3.select('#fitToScreenButton').style('top', "30px")
+			d3.select('#fitToScreenButton').style('left', (window.innerWidth - 80) + "px")
 
-		var selectedEntity = 0;
-		var selected_org_type = 0;
-		var selected_view_color = 0;
+			d3.select('#expandAllButton').style('top', "70px")
+			d3.select('#expandAllButton').style('left', (window.innerWidth - 80) + "px")
 
-		d3.select('#fitToScreenButton').style('top', "70px")
-		d3.select('#fitToScreenButton').style('left', (window.innerWidth - 100) + "px")
+			d3.select('#collapseAllButton').style('top', "110px")
+			d3.select('#collapseAllButton').style('left', (window.innerWidth - 80) + "px")
 
-		d3.select('#expandAllButton').style('top', "100px")
-		d3.select('#expandAllButton').style('left', (window.innerWidth - 100) + "px")
+			d3.select('#searchButton').style('top', "150px")
+			d3.select('#searchButton').style('left', (window.innerWidth - 80) + "px")
 
-		d3.select('#collapseAllButton').style('top', "130px")
-		d3.select('#collapseAllButton').style('left', (window.innerWidth - 100) + "px")
+			var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3) < 300 ? (window.innerWidth - params.chartWidth - 3) : 300;
+			params.chartWidth = window.innerWidth - detailsSideBarWidth - 3;
+			var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
 
-		var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3) < 300 ? (window.innerWidth - params.chartWidth - 3) : 300;
-		params.chartWidth = window.innerWidth - detailsSideBarWidth - 3;
-		var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
-
-		params.detailsSideBarWidth = detailsSideBarWidth;
+			params.detailsSideBarWidth = detailsSideBarWidth;
 		
-		d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
-    	d3.select('.details-side-bar').style('height', (window.innerHeight - navbarHeight) + "px")
-		
-    	d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
-    	d3.select('.details-side-bar').style('position', "fixed")
-    	d3.select('#svgChart').style('margin-left', detailsSideBarWidth + "px")
-    	d3.select('#svgChart').style('top', "0px")
+			d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
+    		d3.select('.details-side-bar').style('height', window.innerHeight + "px")
+    		d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
+    		d3.select('.details-side-bar').style('position', "fixed")
+    		d3.select('#svgChart').style('margin-left', detailsSideBarWidth + "px")
+    		d3.select('#svgChart').style('top', "0px")
 
-    	d3.select('.legend').style('top', (window.innerHeight - 50) + "px")
-    	// d3.select('.legend2').style('top', (window.innerHeight - 30) + "px")
-    	// d3.select('.legend3').style('top', (window.innerHeight - 30) + "px")
-    	// d3.select('.legend4').style('top', (window.innerHeight - 30) + "px")
-    	// d3.select('.legend5').style('top', (window.innerHeight - 30) + "px")
-    	// d3.select('.legend6').style('top', (window.innerHeight - 30) + "px")
-    	// d3.select('.legend7').style('top', (window.innerHeight - 30) + "px")
-    	// d3.select('.legend8').style('top', (window.innerHeight - 30) + "px")
+    		d3.select('.legend').style('top', (window.innerHeight - 47) + "px")
+    		d3.select('.legend').style('left', (detailsSideBarWidth) + "px")
 
-    	d3.select('.legend').style('left', (detailsSideBarWidth) + "px")
-    	// d3.select('.legend2').style('left', (detailsSideBarWidth + 100) + "px")
-    	// d3.select('.legend3').style('left', (detailsSideBarWidth + 200) + "px")
-    	// d3.select('.legend4').style('left', (detailsSideBarWidth + 310) + "px")
-    	// d3.select('.legend5').style('left', (detailsSideBarWidth + 420) + "px")
-    	// d3.select('.legend6').style('left', (detailsSideBarWidth + 520) + "px")
-    	// d3.select('.legend7').style('left', (detailsSideBarWidth + 650) + "px")
-    	// d3.select('.legend8').style('left', (detailsSideBarWidth + 775) + "px")
+	    	d3.select('#viewColorByLegend').style('top', (window.innerHeight - 47) + "px")
+			d3.select('#viewColorByLegend').style('left', (detailsSideBarWidth + 950) + "px")
 
-    	d3.select('.legendB1').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legendB2').style('top', (window.innerHeight - 30) + "px")
-    	d3.select('.legendB3').style('top', (window.innerHeight - 30) + "px")
-		d3.select('.legendB1').style('left', (detailsSideBarWidth + 950) + "px")
-    	d3.select('.legendB2').style('left', (detailsSideBarWidth + 1020) + "px")
-    	d3.select('.legendB3').style('left', (detailsSideBarWidth + 1120) + "px")
-		//d3.select('#fitToScreenButton').style('left', (detailsSideBarWidth + 25) + "px")
-
-    	function toTitleCase(str) {
-			str = str.toLowerCase()
-    		return str.replace(/(?:^|\s)\w/g, function(match) {
-    			return match.toUpperCase();
-    		});
-    	}
-
-		document.getElementById('selectedType').innerHTML = 'All';
-		document.getElementById('selectedColorBy').innerHTML = 'None';
-
-    	var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
-		var ViewColorByCategory = ['None', 'Patient Revenue', 'Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
-
-    	d3.json("HES_V1_V5_HIERARCHY.json", function (error, data) {
-    		if (error) {
-    			return console.warn(error);
+    		function toTitleCase(str) {
+				str = str.toLowerCase()
+    			return str.replace(/(?:^|\s)\w/g, function(match) {
+    				return match.toUpperCase();
+    			});
     		}
-    		$('.ui.fluid.search.selection.dropdown.entity_name').dropdown({
-    			fullTextSearch: true,
-    			onChange: function (value, text, $selectedItem) {
-					selectedEntity = value;
-					document.getElementById('selectedType').innerHTML = 'All';
 
-					d3.select('.legendB1').style('display', 'none')
-					d3.select('.legendB2').style('display', 'none')
-					d3.select('.legendB3').style('display', 'none')
-					document.getElementById('selectedColorBy').innerHTML = 'None';
-    					treeWrapper(value, 'All', 0);
-    			}
-    		});
-    		$('.ui.fluid.search.selection.dropdown.entity_type').dropdown({
-    			fullTextSearch: true,
-    			onChange: function (value, text, $selectedItem) {
-					selected_org_type = text;
-					document.getElementById('selectedColorBy').innerHTML = 'None';
+    		var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
+			var ViewColorByCategory = ['None', 'Patient Revenue', 'Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
 
-					d3.select('.legendB1').style('display', 'none')
-					d3.select('.legendB2').style('display', 'none')
-					d3.select('.legendB3').style('display', 'none')
-    				treeWrapper(selectedEntity, text, 0);
-    			}
-    		});
+			$(document).ready(function () {
+				tableau.extensions.initializeAsync().then(function () {
+	  				tableau.extensions.dashboardContent.dashboard.getParametersAsync().then(function (parameters) {
+						parameters.forEach(function (p) {
+							p.addEventListener(tableau.TableauEventType.ParameterChanged, onParameterChange);
+							if (p.name === 'SelectedEntityName') {
+								selectedEntityName = p.currentValue.formattedValue;
+							}
+							else if (p.name === 'RequiredDataSourceName') {
+								requiredDataSourceName = p.currentValue.formattedValue;
+							}
+							else if (p.name === 'SelectedEntityType') {
+								selectedEntityType = p.currentValue.formattedValue;
+							}
+							else if (p.name === 'ViewColorsBy') {
+								viewColorBy = p.currentValue.formattedValue;
+							}
+						});
+	  				});
+			
+					let dataSourceFetchPromises = [];
 
-			$('.ui.fluid.search.selection.dropdown.view_color').dropdown({
-    			fullTextSearch: true,
-    			onChange: function (value, text, $selectedItem) {
-					selected_view_color = value;
+					// Maps dataSource id to dataSource so we can keep track of unique dataSources.
+					let dashboardDataSources = {};
 
-					if (value == 0) {
-						d3.select('.legendB1').style('display', 'none')
-						d3.select('.legendB2').style('display', 'none')
-						d3.select('.legendB3').style('display', 'none')
+					// To get dataSource info, first get the dashboard.
+					const dashboard = tableau.extensions.dashboardContent.dashboard;
+
+					// Then loop through each worksheet and get its dataSources, save promise for later.
+					dashboard.worksheets.forEach(function (worksheet) {
+						dataSourceFetchPromises.push(worksheet.getDataSourcesAsync());
+					});
+
+					Promise.all(dataSourceFetchPromises).then(function (fetchResults) {
+						fetchResults.forEach(function (dataSourcesForWorksheet) {
+							dataSourcesForWorksheet.forEach(function (dataSource) {
+								//if (!dashboardDataSources[dataSource.id]) { // We've already seen it, skip it.
+								dashboardDataSources[dataSource.id] = dataSource;
+								//}
+							});
+						});
+
+						buildDataSourcesTable(dashboardDataSources);
+	  				});
+				}, function (err) {
+					// Something went wrong in initialization.
+					console.log('Error while Initializing: ' + err.toString());
+				});
+  			});
+
+			function onParameterChange (parameterChangeEvent) {
+				parameterChangeEvent.getParameterAsync().then(function (param) {
+					if (param.name === 'SelectedEntityName') {
+						selectedEntityName = param.currentValue.formattedValue;
+			
+						dataSource.getLogicalTablesAsync().then(logicalTables => {
+							dataSource.getLogicalTableDataAsync(logicalTables[0].id).then(dataTable => {
+		 						preprocessData(dataTable, selectedEntityName);
+							});
+	  					});
 					}
-					else {
-						d3.select('.legendB1').style('display', 'block')
-						d3.select('.legendB2').style('display', 'block')
-						d3.select('.legendB3').style('display', 'block')
+
+					if (param.name === 'ViewColorsBy') {
+						viewColorBy = param.currentValue.formattedValue;
+			
+						params.entityType = selectedEntityType;
+						params.colorBy = ViewColorByCategory.indexOf(viewColorBy);
+
+						document.getElementById('viewColorByLegend').innerHTML = '';
+						document.getElementById('legend').innerHTML = '';
+						d3.selectAll("svg").remove();
+						drawOrganizationChart(params);
 					}
-    				
-					treeWrapper(selectedEntity, selected_org_type, value);
-    			}
-    		});
 
-            
-            for (var i = 0; i < data.length; i++) {
-                $('.dropdown.entity_name .menu')
-                .append('<div class="item" data-value=' + i + '> ' + toTitleCase(data[i].ENTITY_NAME.toLowerCase()) + '</div>');
-            }
-            $('.ui.fluid.search.selection.dropdown.entity_name').dropdown("refresh")
-            $('.ui.fluid.search.selection.dropdown.entity_name').dropdown('set selected', 0);
-            
-            for (var i = 0; i < OrgTypes.length; i++) {
-                $('.dropdown.entity_type .menu')
-                .append('<div class="item" data-value=' + i + '> ' + OrgTypes[i] + '</div>');
-            }
-            $('.ui.fluid.search.selection.dropdown.entity_type').dropdown("refresh")
-            $('.ui.fluid.search.selection.dropdown.entity_type').dropdown('set selected', 0);
+					if (param.name === 'SelectedEntityType') {
+						selectedEntityType = param.currentValue.formattedValue;
 
+						params.entityType = selectedEntityType;
+						params.colorBy = ViewColorByCategory.indexOf(viewColorBy);
 
-            for (var i = 0; i < ViewColorByCategory.length; i++) {
-                $('.dropdown.view_color .menu')
-                .append('<div class="item" data-value=' + i + '> ' + ViewColorByCategory[i] + '</div>');
-            }
-            $('.ui.fluid.search.selection.dropdown.view_color').dropdown("refresh")
-            $('.ui.fluid.search.selection.dropdown.view_color').dropdown('set selected', 0);
-
-            function treeWrapper(entity_name,entity_type, color_by) {
-            	d3.selectAll("svg").remove();
-                // debugger;
-                var tempData = data[entity_name];
-				params.data = tempData;
-				params.dataIndex = entity_name;
-				params.entityType = entity_type;
-				params.colorBy = color_by;
-				drawOrganizationChart(params);
-            }
-
-            var entityCount = d3.select("#entityNameMenu").selectAll('div')[0].length;
-            var children = d3.select("#entityNameMenu").selectAll('div')[0];
-
-            for (var i=0; i<entityCount; i+=1) {
-            	if (children[i].textContent.toLowerCase().includes(entityName.toLowerCase())) {
-					document.getElementById('selectedEntity').innerHTML = entityName;//'Providence Saint Joseph Health';
-					selected_org_type = 'All';
-					selected_view_color = ViewColorByCategory.findIndex(getIndex);
-					treeWrapper(i,'All', selected_view_color);
-					selectedEntity = i;
-            		d3.select('#selectedEntity').text(children[i].textContent);
-            			break;
-            	}
-            }
-
-			function getIndex(element) {
-  				return element == colorBy;
+						document.getElementById('viewColorByLegend').innerHTML = '';
+						document.getElementById('legend').innerHTML = '';
+						d3.selectAll("svg").remove();
+						drawOrganizationChart(params);
+					}
+				});
 			}
-            //treeWrapper(0,'All');
-		})
+
+			// Refreshes the given dataSource.
+			function refreshDataSource (dataSource) {
+				dataSource.refreshAsync().then(function () {
+					console.log(dataSource.name + ': Refreshed Successfully');
+				});
+			}
+	  
+  			function buildDataSourcesTable (dataSources) {
+				// Add an entry to the dataSources table for each dataSource.
+				for (let dataSourceId in dataSources) {
+					if (dataSources[dataSourceId].name === requiredDataSourceName) {
+						dataSource = dataSources[dataSourceId];
+					
+	  					dataSource.getLogicalTablesAsync().then(logicalTables => {
+							// Get the first logical table's id
+							// In Tableau <= 2020.1, the first table is the only table returned.
+							dataSource.getLogicalTableDataAsync(logicalTables[0].id).then(dataTable => {
+		 						preprocessData(dataTable, selectedEntityName);
+							});
+			  			});
+					}
+				}
+  			}
+
+		function preprocessData(dataTable, entityL1) {
+			var requiredData = []
+	
+			let field = dataTable.columns.find(column => column.fieldName === "Lvl1 Name");
+			for(var i=0; i<dataTable.data.length; i++) {
+	   			if (dataTable.data[i][field.index]['_formattedValue'] === entityL1) {
+					requiredData.push(dataTable.data[i]); 
+	   			}
+			}
+	
+			var jsonFormat = []
+
+			generateJsonFormat(requiredData, jsonFormat, 1)
+
+			params.data = jsonFormat[0];
+			params.entityType = selectedEntityType;
+			params.colorBy = ViewColorByCategory.indexOf(viewColorBy);
+
+			document.getElementById('viewColorByLegend').innerHTML = '';
+			document.getElementById('legend').innerHTML = '';
+			d3.selectAll("svg").remove();
+			drawOrganizationChart(params);
+
+			function generateJsonFormat(data, json, depth) {
+				var currentLevel = dataTable.columns.find(column => column.fieldName === `Lvl${depth} Id`);  
+				if (currentLevel == undefined) { return; }
+
+				if(String(data[0][currentLevel.index]['_formattedValue']) === 'Null') { return; }
+			  
+				// Create the node in json
+	  			var node = {};
+
+	  			node.ENTITY_ID = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Id`).index]['_formattedValue']
+
+				// Check if No of Osubs Columns exists
+	  			if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Osubs`) != undefined)
+					node.NO_OF_OSUBS = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Osubs`).index]['_formattedValue']
+
+				// Check if No of Hosps Columns exists
+	  			if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Hosps`) != undefined)
+					node.NO_OF_HOSPS = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Hosps`).index]['_formattedValue']
+	  
+				// Check if No of Socs Columns exists
+	  			if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Socs`) != undefined)
+					node.NO_OF_SOCS = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Socs`).index]['_formattedValue']
+
+				// Check if No of Outlets Columns exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Outlets`) != undefined)
+					node.NO_OF_OUTLETS = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} No Of Outlets`).index]['_formattedValue']
+
+				// Check if Name Columns exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Name`) != undefined)
+					node.ENTITY_NAME = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Name`).index]['_formattedValue']
+
+				// Check if Entity Type Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Entity Type`) != undefined)
+					node.ENTITY_TYPE = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Entity Type`).index]['_formattedValue']
+
+				// Check if Org Type Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Org Type`) != undefined)
+					node.ENTITY_ORG_TYPE = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Org Type`).index]['_formattedValue']
+
+				// Check if Org Subtype Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Org Subtype`) != undefined)
+					node.ENTITY_ORG_SUBTYPE = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Org Subtype`).index]['_formattedValue']
+
+				// Check if Address Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Addr 1`) != undefined)
+					node.ENTITY_ADDR1 = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Addr 1`).index]['_formattedValue']
+
+				// Check if City Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} City`) != undefined)
+					node.ENTITY_CITY = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} City`).index]['_formattedValue']
+
+				// Check if State Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} St`) != undefined)
+					node.ENTITY_STATE = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} St`).index]['_formattedValue']
+
+				// Check if Zip Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Zip`) != undefined)
+					node.ENTITY_ZIP = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Zip`).index]['_formattedValue']
+
+
+				// Check if 340B Flag Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} 340B Flag`) != undefined)
+					node.ENTITY_340B_FLAG = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} 340B Flag`).index]['_formattedValue']
+
+				// Check if Srep Access Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Srep Access`) != undefined)
+					node.ENTITY_SREP_ACCESS = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Srep Access`).index]['_formattedValue']
+
+				// Check if Net Patient Revenue exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Net Patient Revenue`) != undefined)
+					node.NET_PATIENT_REVENUE = parseFloat(data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Net Patient Revenue`).index]['_formattedValue']).toFixed(2)
+
+
+				// Check if Net Income Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Net Income`) != undefined)
+					node.NET_INCOME = parseFloat(data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Net Income`).index]['_formattedValue']).toFixed(2)
+
+
+				// Check if Net Income Margin Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Net Income Margin`) != undefined)
+					node.NET_INCOME_MARGIN = parseFloat(data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Net Income Margin`).index]['_formattedValue']).toFixed(2)
+
+				// Check if Structure Segment Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Structure Segment`) != undefined)
+					node.STRUCTURE_SEGMENT = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Structure Segment`).index]['_formattedValue']
+
+
+				// Check if Patient Experience Segment Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Patient Experience Segment`) != undefined)
+					node.PATIENT_EXPERIENCE_SEGEMENT = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Patient Experience Segment`).index]['_formattedValue']
+
+
+				// Check if Quality Segment Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Quality Segment`) != undefined)
+					node.QUALITY_SEGMENT = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Quality Segment`).index]['_formattedValue']
+
+				// Check if Research Segment Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Research Segment`) != undefined)
+					node.RESEARCH_SEGEMENT = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Research Segment`).index]['_formattedValue']
+
+
+				// Check if Willingness To Patner Segment Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} 340B Flag`) != undefined)
+					node.WILLINGNESS_TO_PATNER_SEGMENT = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Willingness To Patner Segment`).index]['_formattedValue']
+
+
+				// Check if Expression Segment Column exists
+				if (dataTable.columns.find(column => column.fieldName === `Lvl${depth} Expression Segment`) != undefined)
+					node.EXPRESSION_SEGMENT = data[0][dataTable.columns.find(column => column.fieldName === `Lvl${depth} Expression Segment`).index]['_formattedValue']
+
+	  			var field1 = dataTable.columns.find(column => column.fieldName === `Lvl${depth - 1} ${depth} Rel Type`);
+	  			if (field1 != undefined && field1 != null)
+					node.REL_TYPE = data[0][field1.index]['_formattedValue']
+  
+	  			var field2 = dataTable.columns.find(column => column.fieldName === `Lvl${depth - 1} ${depth} Rel Subtype`);      
+	  			if (field2 != undefined && field2 != null)
+					node.REL_SUBTYPE = data[0][field2.index]['_formattedValue']
+  
+	  			var field3 = dataTable.columns.find(column => column.fieldName === `Lvl${depth + 1} Id`);
+	  			if (field3 != undefined) {
+					if (String(data[0][field3.index]['_formattedValue']) != 'Null') {
+		  				node.children = []
+					}
+	  			}
+  
+	  			// Get its children
+	  			if (node.children) {
+					var idList = [];
+					var field = `Lvl${depth + 1} Id`;
+					let fieldIndex = dataTable.columns.find(column => column.fieldName === field).index;
+					
+					for(var index=0; index < data.length; index++) {
+		  				idList.push(data[index][fieldIndex]['_formattedValue'])
+					}
+		
+					let uniqueChars = [...new Set(idList)]
+		
+					// Iterate over all children
+					for (var i=0; i<uniqueChars.length; i++) {
+						var requiredData = []
+						// Iterate over data to get a single entity
+						for(var j=0; j<data.length; j++) {
+							if (data[j][fieldIndex]['_formattedValue'] === uniqueChars[i]) {
+			  					requiredData.push(data[j]); 
+			  				}
+		 				}
+		
+						generateJsonFormat(requiredData, node.children, depth + 1)
+					}
+	  			}
+
+	 			json.push(node)
+			}
+  		}
     </script>
 </body>
 

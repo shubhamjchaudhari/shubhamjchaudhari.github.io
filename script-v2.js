@@ -1,4 +1,7 @@
 function drawOrganizationChart(params) {
+
+    d3.select('#detailsSideBar').html('')
+
     listen();
 
 	params.funcs.expandAll = expandAll;
@@ -125,8 +128,6 @@ function drawOrganizationChart(params) {
 	colors.filledNodeBackground = '#dedede';
     colors.unfilledNodeBackground = '#ffffff';
     
-    document.getElementById('legend').innerHTML = '';
-
     // Handle legend contents
     for (var key in params.relationColors) {
         var style = `style="margin-left: 10px; font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`
@@ -134,6 +135,19 @@ function drawOrganizationChart(params) {
         if (key=='Filled') style = `style=" font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`;
         
         document.getElementById('legend').innerHTML += `<li ${style}><span style="background-color: ${params.relationColors[key]}; height:5px; width: 15px; margin-top: 7px; margin-left: 5px;"></span> ${toTitleCase(key)}</li>`
+    }
+
+    if(params.colorBy != 0) {
+        for (var key in colorCategory) {
+            var style = `style="margin-left: 10px; font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`
+    
+            if (key=='Low') style = `style=" font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`;
+    
+            document.getElementById('viewColorByLegend').innerHTML += `<li ${style}><span style="background-color: ${colorCategory[key]}; height:10px; width: 10px; margin-top: 5px; margin-left: 5px;"></span> ${toTitleCase(key)}</li>`
+        }
+    }
+    else {
+        document.getElementById('viewColorByLegend').innerHTML = '';
     }
 
     var selectedNode = null;
@@ -148,26 +162,15 @@ function drawOrganizationChart(params) {
 	// Gnerate required data structures for other operations
 	function generateDataStructures(node, depth) {
 		node.depth = depth;
-		node.NET_PATIENT_REVENUE = parseFloat((Math.random() * 10).toFixed(2))
-		node.NET_INCOME = parseFloat((Math.random() * 10).toFixed(2))
-		node.NET_INCOME_MARGIN = parseFloat((Math.random() * 10).toFixed(2))
-
-		var category = ['High', 'Medium', 'Low'];
-		node.STRUCTURE_SEGMENT = category[(parseInt(node.NET_PATIENT_REVENUE) % 3)]
-		node.PATIENT_EXPERIENCE_SEGEMENT = category[(parseInt(node.NET_INCOME) % 3)]
-		node.QUALITY_SEGMENT = category[(parseInt(node.NET_INCOME_MARGIN) % 3)]
-		node.RESEARCH_SEGEMENT = category[(parseInt(node.NET_PATIENT_REVENUE) % 3)]
-		node.WILLINGNESS_TO_PATNER_SEGMENT = category[(parseInt(node.NET_INCOME) % 3)]
-		node.EXPRESSION_SEGMENT = category[(parseInt(node.NET_INCOME_MARGIN) % 3)]
 
 		if (!classifierData[node.ENTITY_ORG_TYPE]) {
 			classifierData[node.ENTITY_ORG_TYPE] = {};
 		}
 
 		if (classifierData[node.ENTITY_ORG_TYPE][depth]) {
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(node.NET_PATIENT_REVENUE);
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(node.NET_INCOME);
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(node.NET_INCOME_MARGIN);
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(parseFloat(node.NET_PATIENT_REVENUE));
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(parseFloat(node.NET_INCOME));
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(parseFloat(node.NET_INCOME_MARGIN));
 		}
 		else {
 			classifierData[node.ENTITY_ORG_TYPE][depth] = {};
@@ -175,9 +178,9 @@ function drawOrganizationChart(params) {
 			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME = [];
 			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN = [];
 
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(node.NET_PATIENT_REVENUE);
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(node.NET_INCOME);
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(node.NET_INCOME_MARGIN);
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(parseFloat(node.NET_PATIENT_REVENUE));
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(parseFloat(node.NET_INCOME));
+			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(parseFloat(node.NET_INCOME_MARGIN));
 		}
 
 		if(node.hasOwnProperty('children')) {
@@ -310,7 +313,7 @@ function drawOrganizationChart(params) {
         attrs.root.children.forEach(collapse);
     }
 
-	update(attrs.root);
+    update(attrs.root);
 	
     d3.select(attrs.selector).style("height", dimens.chartHeight);
 
@@ -410,15 +413,18 @@ function drawOrganizationChart(params) {
 			case 7: parameter = 'RESEARCH_SEGEMENT'; break;
 			case 8: parameter = 'WILLINGNESS_TO_PATNER_SEGMENT'; break;
 			case 9: parameter = 'EXPRESSION_SEGMENT'; break;
-		}
+        }
 
 		if (!node[parameter]) return colors.unfilledNodeBackground;
 
-		if(typeof node[parameter] == 'string') {
+		if(node[parameter].toLowerCase() === 'low' || node[parameter].toLowerCase() === 'medium' || node[parameter].toLowerCase() === 'high') {
 			return colorCategory[node[parameter].toLowerCase()]
 		}
 		else {
-			var valueArray = classifierData[node.ENTITY_ORG_TYPE][node.depth][parameter];
+            var valueArray = classifierData[node.ENTITY_ORG_TYPE][node.depth][parameter];
+            
+            
+
 			var size = valueArray.length;
 			
 			if (size == 1) { return colorCategory.high }
