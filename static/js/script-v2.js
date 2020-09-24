@@ -45,7 +45,7 @@ function drawOrganizationChart(params) {
 		'OUTLET' : 5
     }
     
-    var OrgTypeImagePath = ['./static/images/IDN_B.png', './static/images/OSUB_B.png', './static/images/Hospital_B.png', './static/images/SOC_B.png', './static/images/OUTLET_B.png', '']
+    var OrgTypeImagePath = ['./static/images/IDN_B.png', './static/images/OSUB_B.png', './static/images/Hospital_B.png', './static/images/SOC_B.png', './static/images/Outlet_B.png', '']
 
 	var selectedEntityLevel = OrgTypeLevel[params.entityType];
     var selectedNodeId = "";
