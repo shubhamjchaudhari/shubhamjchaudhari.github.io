@@ -499,6 +499,11 @@ text {
 .node-group .emp-count-icon {
   fill: #91a4a5;
 }
+
+.node-group .color-category {
+  fill: #272727;
+}
+
 .dropdown-box {
   /* position: absolute; */
   /* left: 25px;

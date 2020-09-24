@@ -80,14 +80,14 @@ function drawOrganizationChart(params) {
     dimens.nodeHeight = (80 * dimens.nodeWidth) / 270;    
     dimens.nodeEntityImageWidth = (dimens.nodeHeight * 100 / 190);
     dimens.nodePadding = dimens.nodeWidth / 30;
-    dimens.nodeEntityImageHeight = (dimens.nodeHeight - 2 * dimens.nodePadding - 4);
+    dimens.nodeEntityImageHeight = (dimens.nodeHeight - 2 * dimens.nodePadding - 5);
 
     // Element paddings and margins
     dimens.rootNodeLeftMargin = params.chartWidth / 2;
     dimens.rootNodeTopMargin = 20;    
-    dimens.nodeEntityNameTopmargin = (dimens.nodePadding + 10) 
-    dimens.nodeEmpEntityNameTopmargin = ((dimens.nodeHeight / 1.5)) 
-    dimens.nodeEmpCountTopMargin = parseInt((dimens.nodeHeight / 1.5) + ((11 * dimens.nodeWidth) / 270) + 5) ;
+    dimens.nodeEntityNameTopmargin = (dimens.nodePadding + 7) 
+    dimens.nodeEmpEntityNameTopmargin = ((dimens.nodeHeight / 1.5))  - ((params.colorBy != 0)? 10 : 4)
+    dimens.nodeEmpCountTopMargin = parseInt((dimens.nodeHeight / 1.5) + ((11 * dimens.nodeWidth) / 270) + 5) - 4 ;
     dimens.nodeTextLeftMargin = dimens.nodeEntityImageWidth + 2 * dimens.nodePadding;
 
     // Element sizes
@@ -97,9 +97,10 @@ function drawOrganizationChart(params) {
 
     // Font sizes
     dimens.collapsibleFontSize = 15;
-    dimens.nodeEntityNameFontSize = ((12 * dimens.nodeWidth) / 270) + 'px';
+    dimens.nodeEntityNameFontSize = ((((params.colorBy != 0)? 11 : 12) * dimens.nodeWidth) / 270) + 'px';
     dimens.nodeEmpEntityNameFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
     dimens.nodeEmpCountFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
+    dimens.nodeMetricValueFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
     dimens.sideBarTitleFontSize = ((18 * dimens.nodeWidth) / 270) + 'px';
     dimens.sideBarSubTitleFontSize = ((14 * dimens.nodeWidth) / 270) + 'px';
     dimens.sideBarContentFontSize = Math.ceil((14 * params.detailsSideBarWidth) / 300) + 'px';
@@ -830,7 +831,16 @@ function drawOrganizationChart(params) {
             .attr("text-anchor", "left")
             .style('word-break', 'break-all')
             .text(function (d) {
-                return toTitleCase(d.ENTITY_NAME.toLowerCase()).trim();
+                var name = toTitleCase(d.ENTITY_NAME.toLowerCase()).trim();
+                
+                if (name.length <= 70) {
+                    return name;
+                }
+                else {
+                    return (name.substring(0, 70) + '...')
+                }
+
+//                return toTitleCase(d.ENTITY_NAME.toLowerCase()).trim();
             })
             .call(wrap, (200 * dimens.nodeWidth) / 270);
 
@@ -841,6 +851,7 @@ function drawOrganizationChart(params) {
             .attr('class', 'emp-position-name')
             .style('font-size', dimens.nodeEmpEntityNameFontSize)
             .attr("dy", ".35em")
+            .style('font-family', 'FontAwesome')
             .attr("text-anchor", "left")
             .text(function (d) {
                 var position = d.ENTITY_ORG_TYPE.substring(0, 27);
@@ -884,33 +895,49 @@ function drawOrganizationChart(params) {
 
             collapsiblesWrapper.on("click", click);
 
-            return position;
+            var finalString = position;
+
+            if (d.children || d._children) {
+                finalString += (' | ' + attrs.userIcon + ' ' + d.kids.length)
+            }
+
+            return finalString;
         })
 
+        if (params.colorBy != 0) {
         // Add children count icon to the node
         nodeGroup.append("text")
             .attr("x", dimens.nodeTextLeftMargin)
             .attr("y", dimens.nodeEmpCountTopMargin)
-            .attr('class', 'emp-count-icon')
+            //.attr("class", "emp-count-icon")
             .attr("text-anchor", "left")
-            .style('font-family', 'FontAwesome')
+            //.style('font-family', 'FontAwesome')
             .style('font-size', dimens.nodeEmpCountFontSize)
+            .style('fill', '#000000')
             .text(function (d) {
-                if (d.children || d._children) return attrs.userIcon;
+                var finalString = params.classificationCategory[params.colorBy] + ' : ';
+                if (params.colorBy <= 3) {
+                    finalString += ('$ ' + d[getFeature(params.colorBy)] + ' B')
+                }
+                else {
+                    finalString += d[getFeature(params.colorBy)]
+                }
+
+                return finalString;
+                //if (d.children || d._children) return attrs.userIcon;
             });
+        }
 
         // Add children count to the node
-        nodeGroup.append("text")
-            .attr("x", dimens.nodeTextLeftMargin + ((13 * dimens.nodeWidth) / 270))
-            .attr("y", dimens.nodeEmpCountTopMargin)
-            .attr('class', 'emp-count')
-            .style('font-size', dimens.nodeEmpCountFontSize)
-            .attr("text-anchor", "left")
-
-            .text(function (d) {
-                if(d.kids ){
-                return d.kids.length }                
-            })
+        // nodeGroup.append("text")
+        //     .attr("x", dimens.nodeTextLeftMargin + ((13 * dimens.nodeWidth) / 270))
+        //     .attr("y", dimens.nodeEmpCountTopMargin)
+        //     .attr('class', 'emp-count')
+        //     .style('font-size', dimens.nodeEmpCountFontSize)
+        //     .attr("text-anchor", "left")
+        //     .text(function (d) {
+        //         if (d.children || d._children) return d.kids.length;                
+        //     })
 
         // Add the entity type icon to the node
         nodeGroup.append("defs").append("svg:clipPath")

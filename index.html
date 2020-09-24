@@ -155,6 +155,9 @@
 		<script>
 			window.onresize = function(){ location.reload(); }
 
+			var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
+			var ViewColorByCategory = ['None', 'Patient Revenue', 'Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
+
 			var params = {
 				selector: "#svgChart",
 				chartWidth: (window.innerWidth - 40) * 0.83,
@@ -188,7 +191,8 @@
 					"OWNERSHIP": "purple",
 					"DEPARTMENT": "forestgreen",
 					"OUTLET": "black"
-				}
+				},
+				classificationCategory: ViewColorByCategory
 			}
 
 			var requiredDataSourceName = '';
@@ -228,9 +232,6 @@
 
 			d3.select('#viewColorByLegend').style('top', (window.innerHeight - 47) + "px")
 			d3.select('#viewColorByLegend').style('left', (detailsSideBarWidth + 950) + "px")
-
-			var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
-			var ViewColorByCategory = ['None', 'Patient Revenue', 'Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
 
 			$(document).ready(function () {
 				tableau.extensions.initializeAsync().then(function () {
