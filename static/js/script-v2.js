@@ -93,7 +93,7 @@ function drawOrganizationChart(params) {
     // Element sizes
     dimens.collapseCircleRadius = dimens.nodeWidth / 30;
     dimens.nodeStrokeWidth = '1px';
-    dimens.selectedNodeStrokeWidth = ((2.5 * dimens.nodeWidth) / 270) + 'px';
+    dimens.selectedNodeStrokeWidth = ((3 * dimens.nodeWidth) / 270) + 'px';
 
     // Font sizes
     dimens.collapsibleFontSize = 15;
@@ -1289,7 +1289,7 @@ function drawOrganizationChart(params) {
 
             d3.select('#detailsSideBar').html(content)
 			d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
-            d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
+            //d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
         }
 
         function tooltipOutHandler() {
@@ -1691,7 +1691,7 @@ function drawOrganizationChart(params) {
 			selectedOriginalBackground = "#fff"
 		}
         d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
-        d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
+        //d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
 
         var elem = document.getElementById(selectedNodeId.replace('#', ''))
 		if (elem != null) {
