@@ -1554,7 +1554,7 @@ function drawOrganizationChart(params) {
             });
         }
 
-        if (expandAll) {
+        //if (expandAll) {
             if (d._children) {
                 d.children = d._children;
                 d.children.forEach(function(d) {
@@ -1562,7 +1562,7 @@ function drawOrganizationChart(params) {
                 });
                 d._children = null;
             }
-        }
+        //}
 
         if (d.children) {
             setToggleSymbol(d, attrs.COLLAPSE_SYMBOL);
