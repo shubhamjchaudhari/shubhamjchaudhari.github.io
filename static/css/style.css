@@ -1,3 +1,9 @@
+body {
+  border: 2px solid teal;
+  padding-right: 1px;
+  margin: 0px;
+}
+
 .full-container {
   background-color: red;
   width: 100%;
@@ -537,10 +543,10 @@ text {
     margin-bottom: -10px;
     margin-left: 10px;
     margin-right: 10px; */
-    border-top: 2px solid teal;
+/*    border-top: 2px solid teal;*/
     border-bottom: 2px solid teal;
-    border-left: 2px solid teal;
-    border-right: 2px solid teal;
+    /*border-left: 2px solid teal;
+    border-right: 2px solid teal;*/
     /*overflow-x: scroll !important;*/
     /*overflow-y: hidden;*/
     background: #fff;
@@ -717,6 +723,11 @@ vertical-align: middle;
 	background-color: #b0b0b0;
 	color: #404040;
   }
+
+.detailsBar {
+  font-family: Roboto!important;
+  padding: 10px;
+}
 
 /* basic positioning */
 .legend { list-style: none; position: absolute; }

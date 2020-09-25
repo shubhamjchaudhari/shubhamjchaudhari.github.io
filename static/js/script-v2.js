@@ -3,7 +3,6 @@ function drawOrganizationChart(params) {
 
     listen();
 
-	params.funcs.expandAll = expandAll;
     params.funcs.search = searchUsers;
     params.funcs.closeSearchBox = closeSearchBox;
     params.funcs.findInTree = findInTree;
@@ -130,37 +129,6 @@ function drawOrganizationChart(params) {
 
 	var classifierData = {}
 
-	// Gnerate required data structures for other operations
-	function generateDataStructures(node, depth) {
-		node.depth = depth;
-
-		if (!classifierData[node.ENTITY_ORG_TYPE]) {
-			classifierData[node.ENTITY_ORG_TYPE] = {};
-		}
-
-		if (classifierData[node.ENTITY_ORG_TYPE][depth]) {
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(parseFloat(node.NET_PATIENT_REVENUE));
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(parseFloat(node.NET_INCOME));
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(parseFloat(node.NET_INCOME_MARGIN));
-		}
-		else {
-			classifierData[node.ENTITY_ORG_TYPE][depth] = {};
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE = [];
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME = [];
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN = [];
-
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_PATIENT_REVENUE.push(parseFloat(node.NET_PATIENT_REVENUE));
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME.push(parseFloat(node.NET_INCOME));
-			classifierData[node.ENTITY_ORG_TYPE][depth].NET_INCOME_MARGIN.push(parseFloat(node.NET_INCOME_MARGIN));
-		}
-
-		if(node.hasOwnProperty('children')) {
-			for(var i=0; i<node.children.length; i+=1) {
-				generateDataStructures(node['children'][i], depth + 1);
-			}
-		}
-    }
-
     function getFeature(colorCategory) {
         var parameter = '';
         switch(parseInt(colorCategory)) {
@@ -245,39 +213,11 @@ function drawOrganizationChart(params) {
             }
         }
     }
-
-	// Modify the generated data structures
-	function modifyDataStrucutres() {		
-		var keys = Object.keys(classifierData);
-		for (var i=0; i<keys.length; i+=1) {
-			var depthKeys =  Object.keys(classifierData[keys[i]]);
-
-			for(var j=0;j<depthKeys.length; j+=1) {
-				classifierData[keys[i]][depthKeys[j]].NET_PATIENT_REVENUE.sort();
-				classifierData[keys[i]][depthKeys[j]].NET_INCOME.sort();
-				classifierData[keys[i]][depthKeys[j]].NET_INCOME_MARGIN.sort();
-			}
-		}
-	}
 	
     sortData(attrs.root, 0)
     if (selectedEntityLevel != 6) {
         filterNodes(attrs.root);
     }
-    //modifyDataStrucutres();
-
-    // if(params.colorBy != 0) {
-    //     for (var key in colorCategory) {
-    //         var style = `style="margin-left: 10px; font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`
-    
-    //         if (key=='Low') style = `style=" font-size: ${((15 * dimens.nodeWidth) / 270)}px;"`;
-    
-    //         document.getElementById('viewColorByLegend').innerHTML += `<li ${style}><span style="background-color: ${colorCategory[key]}; height:10px; width: 10px; margin-top: 5px; margin-left: 5px;"></span> ${toTitleCase(key)}</li>`
-    //     }
-    // }
-    // else {
-    //     document.getElementById('viewColorByLegend').innerHTML = '';
-    // }
 
     var tree = d3.layout.tree().nodeSize([dimens.nodeWidth + 40, dimens.nodeHeight])
                 .separation(function(a, b) {
@@ -992,11 +932,7 @@ function drawOrganizationChart(params) {
             .attr("height", dimens.nodeHeight)
             .attr('rx', 3)
             .style("stroke", function (d) {
-                if (param && d.uniqueIdentifier == param.locate) {
-                }
-                else {
                 	return colors.nodeStroke;
-            	}
             })
             .style('stroke-width', function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
@@ -1217,8 +1153,8 @@ function drawOrganizationChart(params) {
             var addvar = item.ENTITY_ADDR1 + ', ' + item.ENTITY_STATE + ', ' + item.ENTITY_CITY + ', ' + item.ENTITY_ZIP;
 
             var strVar = '';
-            strVar += `<div class="ui card sidebarcard">`
-            strVar += `		<div class="content">`
+            strVar += `<div class="ui sidebarcard">`
+            strVar += `		<div class="detailsBar">`
             strVar += `			<img class="left floated mini ui image" src="https://semantic-ui.com/images/avatar/large/elliot.jpg" style="height:  30px;">`
             strVar += `			<div class="header" style="font-size: ${dimens.sideBarTitleFontSize};">${toTitleCase(item.ENTITY_NAME)}</div>`
             strVar += `			<div class="meta" style="font-size: ${dimens.sideBarSubTitleFontSize}">${item.ENTITY_ORG_TYPE}</div>`
@@ -1297,7 +1233,7 @@ function drawOrganizationChart(params) {
         function sideBarHandler(d) {
             var content = sideBarContent(d)
             if (selectedNodeId != "") {
-				d3.select(selectedNodeId).attr("stroke-width", dimens.nodeStrokeWidth)
+				d3.select(selectedNodeId).style("stroke-width", dimens.nodeStrokeWidth)
 	            //d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
             }
 
@@ -1305,7 +1241,7 @@ function drawOrganizationChart(params) {
 //	        selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
 
             d3.select('#detailsSideBar').html(content)
-            d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
+            d3.select(selectedNodeId).style("stroke-width", dimens.selectedNodeStrokeWidth)
             //d3.select(selectedNodeId).style("stroke", "#000000")
             //d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
         }
@@ -1549,20 +1485,22 @@ function drawOrganizationChart(params) {
             }
         }
         if (d.children) {
+            setToggleSymbol(d, attrs.COLLAPSE_SYMBOL);
             d.children.forEach(function(d) {
                 expand(d, expandAll)
             });
         }
 
-        //if (expandAll) {
-            if (d._children) {
-                d.children = d._children;
+        if (d._children) {
+            setToggleSymbol(d, attrs.COLLAPSE_SYMBOL);
+            d.children = d._children;
+            if (expandAll) {
                 d.children.forEach(function(d) {
                     expand(d, expandAll)
                 });
-                d._children = null;
             }
-        //}
+            d._children = null;
+        }
 
         if (d.children) {
             setToggleSymbol(d, attrs.COLLAPSE_SYMBOL);
@@ -1572,8 +1510,7 @@ function drawOrganizationChart(params) {
 	function collapseAll() {
 		if (attrs.root.children) {
 			attrs.root.children.forEach(collapse);
-		}
-		
+        }
 		update(attrs.root);
 	}
 
@@ -1701,46 +1638,37 @@ function drawOrganizationChart(params) {
             locate: id
 		})
 		
-		  if (selectedNodeId != "") {
-		// 	d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
-		 	d3.select(selectedNodeId).attr("stroke-width", dimens.nodeStrokeWidth)
-        //     d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
-         }
+		if (selectedNodeId != "") {
+		    d3.select(selectedNodeId).style("stroke-width", dimens.nodeStrokeWidth)
+        }
 
-		 selectedNodeId = ("#N" + id)
-		// if (d3.select(selectedNodeId) == null) {
-        // 	selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
-		// }
-		// else {
-		// 	selectedOriginalBackground = "#fff"
-		// }
-        d3.select(selectedNodeId).attr("stroke-width", "3px")
-         d3.select(selectedNodeId).attr("stroke", colors.nodeStroke)
-        //d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
+		selectedNodeId = ("#N" + id)
+        d3.select(selectedNodeId).style("stroke-width", dimens.selectedNodeStrokeWidth)
+        //d3.select(selectedNodeId).style("stroke", colors.nodeStroke)
+ 
+        var elem = document.getElementById("N" + id)
+		if (elem != null) {
+			var evt = document.createEvent("MouseEvents");
+			evt.initMouseEvent(
+			"click", // Type
+			true, // Can bubble
+			true, // Cancelable
+			window, // View
+			0, // Detail
+			0, // ScreenX
+			0, // ScreenY
+			0, // ClientX
+			0, // ClientY
+			false, // Ctrl key
+			false, // Alt key
+			false, // Shift key
+			false, // Meta key
+			0, // Button
+			null); // RelatedTarget
 
-        // var elem = document.getElementById("N" + id)
-		// if (elem != null) {
-		// 	var evt = document.createEvent("MouseEvents");
-		// 	evt.initMouseEvent(
-		// 	"click", // Type
-		// 	true, // Can bubble
-		// 	true, // Cancelable
-		// 	window, // View
-		// 	0, // Detail
-		// 	0, // ScreenX
-		// 	0, // ScreenY
-		// 	0, // ClientX
-		// 	0, // ClientY
-		// 	false, // Ctrl key
-		// 	false, // Alt key
-		// 	false, // Shift key
-		// 	false, // Meta key
-		// 	0, // Button
-		// 	null); // RelatedTarget
-
-		// 	elem.dispatchEvent(evt);			
-		// }
-	}
+			elem.dispatchEvent(evt);			
+		}
+}
 
     function set(selector, value) {
         var elements = getAll(selector);
@@ -1856,10 +1784,7 @@ function drawOrganizationChart(params) {
 	}
 
 	// Collapse the tree and expand the nodes in the path
-    function expandSelectedNodes(node,path){
-		 //collapseAll();
-         //update(attrs.root);
-        
+    function expandSelectedNodes(node,path){                 
         while(path.length > 0)
         {
             node.children = node.kids.filter( kid => kid.pageNo == path[0].pageNo)

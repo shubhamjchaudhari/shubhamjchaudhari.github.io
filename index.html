@@ -139,7 +139,7 @@
 		<ul class="legend" id="legend"></ul>
 		<ul class="legend" id="viewColorByLegend"></ul>
 
-    	<div class="details-side-bar" id="detailsSideBar" style="border: 2px solid teal"></div>
+    	<div class="details-side-bar" id="detailsSideBar" style="float: right; border-left: 2px solid teal;"></div>
 
 		<div id="svgChart" style="float: left;"></div>
 
@@ -153,7 +153,6 @@
 		<!--script type="text/javascript" src="./static/js/script.js"></script-->
 		<script type="text/javascript" src="./static/js/script-v2.js"></script>
 		<script>
-			window.onresize = function(){ location.reload(); }
 			var treeData = {}
 
 			var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
@@ -221,10 +220,11 @@
 			d3.select('#searchButton').style('left', (params.chartWidth - 80) + "px")
 
 			d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
-			d3.select('.details-side-bar').style('height', window.innerHeight + "px")
+			d3.select('.details-side-bar').style('height', (window.innerHeight) + "px")
 			d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
 			d3.select('.details-side-bar').style('left', (params.chartWidth) + "px")
 			d3.select('.details-side-bar').style('position', "fixed")
+			d3.select('#svgChart').style('width', params.chartWidth + "px")
 			d3.select('#svgChart').style('margin-left', "0px")
 			d3.select('#svgChart').style('top', "0px")
 
@@ -233,6 +233,52 @@
 
 			d3.select('#viewColorByLegend').style('top', (window.innerHeight - 47) + "px")
 			d3.select('#viewColorByLegend').style('left', (detailsSideBarWidth + 950) + "px")
+
+			window.onresize = function(){ 
+				params.chartHeight = window.innerHeight - 50;
+				params.chartWidth = (window.innerWidth - 40) * 0.83;
+
+				var detailsSideBarWidth = (window.innerWidth - params.chartWidth - 3) < 300 ? (window.innerWidth - params.chartWidth - 3) : 300;
+				params.chartWidth = window.innerWidth - detailsSideBarWidth - 3;
+				var navbarHeight = parseInt(d3.select('#navbar').style("height").slice(0, -2))
+
+				params.detailsSideBarWidth = detailsSideBarWidth;
+
+				d3.select('#fitToScreenButton').style('top', "30px")
+				d3.select('#fitToScreenButton').style('left', (params.chartWidth - 80) + "px")
+
+				d3.select('#expandAllButton').style('top', "70px")
+				d3.select('#expandAllButton').style('left', (params.chartWidth - 80) + "px")
+
+				d3.select('#collapseAllButton').style('top', "110px")
+				d3.select('#collapseAllButton').style('left', (params.chartWidth - 80) + "px")
+
+				d3.select('#searchButton').style('top', "150px")
+				d3.select('#searchButton').style('left', (params.chartWidth - 80) + "px")
+
+				d3.select('.details-side-bar').style('width', detailsSideBarWidth + "px")
+				d3.select('.details-side-bar').style('height', (window.innerHeight) + "px")
+				d3.select('.details-side-bar').style('top', (navbarHeight) + "px")
+				d3.select('.details-side-bar').style('left', (params.chartWidth) + "px")
+				d3.select('.details-side-bar').style('position', "fixed")
+
+				d3.select('#svgChart').style('width', params.chartWidth + "px")
+				d3.select('#svgChart').style('margin-left', "0px")
+				d3.select('#svgChart').style('top', "0px")
+
+				d3.select('.legend').style('top', (window.innerHeight - 47) + "px")
+				d3.select('.legend').style('left', "0px")
+
+				d3.select('#viewColorByLegend').style('top', (window.innerHeight - 47) + "px")
+				d3.select('#viewColorByLegend').style('left', (detailsSideBarWidth + 950) + "px")
+
+				document.getElementById('viewColorByLegend').innerHTML = '';
+			    document.getElementById('legend').innerHTML = '';
+
+				d3.selectAll("svg").remove();
+				
+				drawOrganizationChart(params)
+			}
 
 			$(document).ready(function () {
 				tableau.extensions.initializeAsync().then(function () {
