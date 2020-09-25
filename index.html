@@ -154,6 +154,7 @@
 		<script type="text/javascript" src="./static/js/script-v2.js"></script>
 		<script>
 			window.onresize = function(){ location.reload(); }
+			var treeData = {}
 
 			var OrgTypes = ['All', 'HOSP','CLIN', 'PHAR', 'INDP', 'WHOL', 'UNSPEC', 'CLIN', 'RC', 'PAYR', 'INDP', 'PHAR', 'HMHLT','OUTLET']
 			var ViewColorByCategory = ['None', 'Patient Revenue', 'Net Income', 'Net Income Margin', 'Structure Segment', 'Patient Experience Segment', 'Quality Segment', 'Research Segment', 'Willingness to Partner Segment', 'Expression Segment']
@@ -300,7 +301,7 @@
 
 						params.entityType = selectedEntityType;
 						params.colorBy = ViewColorByCategory.indexOf(viewColorBy);
-
+						params.data = JSON.parse(JSON.stringify(treeData))
 						document.getElementById('viewColorByLegend').innerHTML = '';
 						document.getElementById('legend').innerHTML = '';
 						d3.selectAll("svg").remove();
@@ -312,7 +313,7 @@
 
 						params.entityType = selectedEntityType;
 						params.colorBy = ViewColorByCategory.indexOf(viewColorBy);
-
+						params.data = JSON.parse(JSON.stringify(treeData))
 						document.getElementById('viewColorByLegend').innerHTML = '';
 						document.getElementById('legend').innerHTML = '';
 						d3.selectAll("svg").remove();
@@ -359,7 +360,8 @@
 
 				generateJsonFormat(requiredData, jsonFormat, 1)
 
-				params.data = jsonFormat[0];
+				treeData = jsonFormat[0];
+				params.data = JSON.parse(JSON.stringify(treeData))
 				params.entityType = selectedEntityType;
 				params.colorBy = ViewColorByCategory.indexOf(viewColorBy);
 

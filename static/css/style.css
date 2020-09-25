@@ -438,7 +438,7 @@ display: none !important;
 }
 .nodeRepresentsCurrentUser {
   stroke: #001f2e;
-  stroke-width: 3;
+  stroke-width: 3px;
 }
 
 text {
@@ -483,7 +483,12 @@ text {
 
 .node-group .entity-name {
   fill: #272727;
-  font-weight: bold
+  font-weight: bold;
+  line-height: 1.5em;
+  height: 3em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .node-group .emp-position-name {

@@ -45,7 +45,7 @@ function drawOrganizationChart(params) {
 		'OUTLET' : 5
     }
     
-    var OrgTypeImagePath = ['./static/images/IDN_B.png', './static/images/OSUB_B.png', './static/images/Hospital_B.png', './static/images/SOC_B.png', './static/images/Outlet_B.png', '']
+    var OrgTypeImagePath = ['./static/images/IDN_B.png', './static/images/OSUB_B.png', './static/images/Hospital_B.png', './static/images/SOC_B.png', './static/images/Outlet_B.png']
 
 	var selectedEntityLevel = OrgTypeLevel[params.entityType];
     var selectedNodeId = "";
@@ -62,7 +62,7 @@ function drawOrganizationChart(params) {
         EXPAND_SYMBOL: '+',
         COLLAPSE_SYMBOL: '-',
         selector: params.selector,
-        root: JSON.parse(JSON.stringify(params.data)),
+        root: params.data,
         index: 0,
         duration: 600,
         minMaxZoomProportions: [0.0005, 200],
@@ -97,7 +97,7 @@ function drawOrganizationChart(params) {
 
     // Font sizes
     dimens.collapsibleFontSize = 15;
-    dimens.nodeEntityNameFontSize = ((((params.colorBy != 0)? 11 : 12) * dimens.nodeWidth) / 270) + 'px';
+    dimens.nodeEntityNameFontSize = ((((params.colorBy != 0)? 11 : 11) * dimens.nodeWidth) / 270) + 'px';
     dimens.nodeEmpEntityNameFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
     dimens.nodeEmpCountFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
     dimens.nodeMetricValueFontSize = ((11 * dimens.nodeWidth) / 270) + 'px';
@@ -209,8 +209,12 @@ function drawOrganizationChart(params) {
         }
     }
 
+    var uid = 1;
+
 	function sortData(node, depth) {
         node.depth = depth;
+        node.id = uid;
+        uid += 1;
 
 		if(node.hasOwnProperty('children')) {
             if (params.colorBy != 0) {
@@ -489,11 +493,8 @@ function drawOrganizationChart(params) {
 			return colorCategory[node[parameter].toLowerCase()]
 		}
 		else {
-            //document.getElementById('LegendLow').innerHTML = 'Hello'
             var valueArray = classifierData[node.ENTITY_ORG_TYPE][node.depth][parameter];
             
-            
-
 			var size = valueArray.length;
 			
 			if (size == 1) { return colorCategory.high }
@@ -837,7 +838,9 @@ function drawOrganizationChart(params) {
                     return name;
                 }
                 else {
-                    return (name.substring(0, 70) + '...')
+                    var temp = name.substring(0, 70);
+                    temp = temp.substring(0, temp.lastIndexOf(' ')) + ' ...'
+                    return temp;
                 }
 
 //                return toTitleCase(d.ENTITY_NAME.toLowerCase()).trim();
@@ -913,7 +916,7 @@ function drawOrganizationChart(params) {
             .attr("text-anchor", "left")
             //.style('font-family', 'FontAwesome')
             .style('font-size', dimens.nodeEmpCountFontSize)
-            .style('fill', '#000000')
+            .style('fill', '#272727')
             .text(function (d) {
                 var finalString = params.classificationCategory[params.colorBy] + ' : ';
                 if (params.colorBy <= 3) {
@@ -974,16 +977,16 @@ function drawOrganizationChart(params) {
             .attr("width", dimens.nodeWidth)
             .attr("height", dimens.nodeHeight)
             .attr('rx', 3)
-            .attr("stroke", function (d) {
+            .style("stroke", function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
                 }
                 else {
                 	return colors.nodeStroke;
             	}
             })
-            .attr('stroke-width', function (d) {
+            .style('stroke-width', function (d) {
                 if (param && d.uniqueIdentifier == param.locate) {
-                    return "1px";
+                    return dimens.selectedNodeStrokeWidth;
                 }
                 return dimens.nodeStrokeWidth
             })
@@ -1281,14 +1284,15 @@ function drawOrganizationChart(params) {
             var content = sideBarContent(d)
             if (selectedNodeId != "") {
 				d3.select(selectedNodeId).attr("stroke-width", dimens.nodeStrokeWidth)
-	            d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
+	            //d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
             }
 
 	        selectedNodeId = ("#N" + d.uniqueIdentifier)
-	        selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
+//	        selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
 
             d3.select('#detailsSideBar').html(content)
-			d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
+            d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
+            //d3.select(selectedNodeId).style("stroke", "#000000")
             //d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
         }
 
@@ -1520,24 +1524,30 @@ function drawOrganizationChart(params) {
     }
 
     function expandAll() {
-        expand(attrs.root);
+        expand(attrs.root, true);
 		update(attrs.root);
     }
 
-    function expand(d) {
+    function expand(d, expandAll=false) {
         if (selectedEntityLevel != 6) {
             if(OrgTypeLevel[d.ENTITY_ORG_TYPE] > selectedEntityLevel - 1) {
                 return;
             }
         }
         if (d.children) {
-            d.children.forEach(expand);
+            d.children.forEach(function(d) {
+                expand(d, expandAll)
+            });
         }
 
-        if (d._children) {
-            d.children = d._children;
-            d.children.forEach(expand);
-            d._children = null;
+        if (expandAll) {
+            if (d._children) {
+                d.children = d._children;
+                d.children.forEach(function(d) {
+                    expand(d, expandAll)
+                });
+                d._children = null;
+            }
         }
 
         if (d.children) {
@@ -1579,7 +1589,7 @@ function drawOrganizationChart(params) {
 
     function setToggleSymbol(d, symbol) {
         d.collapseText = symbol;
-        d3.select("*[data-id='" + d.uniqueIdentifier + "']").select('text').text(symbol);
+        d3.select("[data-id='" + d.uniqueIdentifier + "']").select('text').text(symbol);
     }
 
     function findmySelf(d) {
@@ -1677,44 +1687,45 @@ function drawOrganizationChart(params) {
             locate: id
 		})
 		
-		if (selectedNodeId != "") {
-			d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
-			d3.select(selectedNodeId).attr("stroke-width", colors.nodeStroke)
-            d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
-        }
+		  if (selectedNodeId != "") {
+		// 	d3.select(selectedNodeId).attr("stroke", attrs.nodeStroke)
+		 	d3.select(selectedNodeId).attr("stroke-width", dimens.nodeStrokeWidth)
+        //     d3.select(selectedNodeId).attr("fill", selectedOriginalBackground)            	
+         }
 
-		selectedNodeId = ("#N" + id)
-		if (d3.select(selectedNodeId) == null) {
-        	selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
-		}
-		else {
-			selectedOriginalBackground = "#fff"
-		}
-        d3.select(selectedNodeId).attr("stroke-width", dimens.selectedNodeStrokeWidth)
+		 selectedNodeId = ("#N" + id)
+		// if (d3.select(selectedNodeId) == null) {
+        // 	selectedOriginalBackground = d3.select(selectedNodeId).attr("fill")
+		// }
+		// else {
+		// 	selectedOriginalBackground = "#fff"
+		// }
+        d3.select(selectedNodeId).attr("stroke-width", "3px")
+         d3.select(selectedNodeId).attr("stroke", colors.nodeStroke)
         //d3.select(selectedNodeId).attr("fill", colors.selectedNodeBackground)
 
-        var elem = document.getElementById(selectedNodeId.replace('#', ''))
-		if (elem != null) {
-			var evt = document.createEvent("MouseEvents");
-			evt.initMouseEvent(
-			"click", // Type
-			true, // Can bubble
-			true, // Cancelable
-			window, // View
-			0, // Detail
-			0, // ScreenX
-			0, // ScreenY
-			0, // ClientX
-			0, // ClientY
-			false, // Ctrl key
-			false, // Alt key
-			false, // Shift key
-			false, // Meta key
-			0, // Button
-			null); // RelatedTarget
+        // var elem = document.getElementById("N" + id)
+		// if (elem != null) {
+		// 	var evt = document.createEvent("MouseEvents");
+		// 	evt.initMouseEvent(
+		// 	"click", // Type
+		// 	true, // Can bubble
+		// 	true, // Cancelable
+		// 	window, // View
+		// 	0, // Detail
+		// 	0, // ScreenX
+		// 	0, // ScreenY
+		// 	0, // ClientX
+		// 	0, // ClientY
+		// 	false, // Ctrl key
+		// 	false, // Alt key
+		// 	false, // Shift key
+		// 	false, // Meta key
+		// 	0, // Button
+		// 	null); // RelatedTarget
 
-			elem.dispatchEvent(evt);			
-		}
+		// 	elem.dispatchEvent(evt);			
+		// }
 	}
 
     function set(selector, value) {
@@ -1832,13 +1843,14 @@ function drawOrganizationChart(params) {
 
 	// Collapse the tree and expand the nodes in the path
     function expandSelectedNodes(node,path){
-		collapseAll();
-		update(attrs.root);
+		 //collapseAll();
+         //update(attrs.root);
+        
         while(path.length > 0)
         {
             node.children = node.kids.filter( kid => kid.pageNo == path[0].pageNo)
 			node = node.children.filter(next_node => next_node.uniqueIdentifier == path[0].uniqueIdentifier)[0]
-			expand(node)
+            expand(node)            
 			path.shift()
         }
     }
@@ -1865,6 +1877,6 @@ function drawOrganizationChart(params) {
 
         elem.dispatchEvent(evt);
 
-        //d3.select('#N1').attr("fill", colors.unfilledNodeBackground)		
+        //d3.select('#N1').attr("fill", colors.unfilledNodeBackground)
     }
 }
