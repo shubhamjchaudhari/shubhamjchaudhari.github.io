@@ -904,7 +904,7 @@ function drawOrganizationChart(params) {
                 finalString += (' | ' + attrs.userIcon + ' ' + d.kids.length)
             }
 
-            return finalString;
+            return position;
         })
 
         if (params.colorBy != 0) {
@@ -930,6 +930,20 @@ function drawOrganizationChart(params) {
                 //if (d.children || d._children) return attrs.userIcon;
             });
         }
+
+        nodeGroup.append("text")
+        .attr("x", dimens.nodeWidth - 40)
+        .attr("y", dimens.nodeEmpEntityNameTopmargin)
+        .attr("class", "emp-count-icon")
+        .attr("text-anchor", "left")
+        .style('font-family', 'FontAwesome')
+        .style('font-size', dimens.nodeEmpCountFontSize)
+        .text(function (d) {
+            if (d.children || d._children) {
+                var string = attrs.userIcon  + ' ' + d.kids.length
+                return (string);
+            }
+        });
 
         // Add children count to the node
         // nodeGroup.append("text")
